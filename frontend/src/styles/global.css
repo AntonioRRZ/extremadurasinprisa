@@ -377,6 +377,16 @@ button {
   background: rgba(255, 255, 255, 0.45);
 }
 
+.metric-card-link {
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.metric-card-link:hover {
+  transform: translateY(-2px);
+  border-color: rgba(45, 93, 71, 0.28);
+  background: rgba(255, 255, 255, 0.7);
+}
+
 .map-frame {
   overflow: hidden;
   border-radius: 20px;

@@ -127,7 +127,7 @@ export type Payment = {
 export type AdminSummary = {
   users: number;
   routes: number;
-  paid_orders: number;
+  orders: number;
   active_passports: number;
   stamps: number;
 };
@@ -138,4 +138,3 @@ export type SessionPayload = {
   token_type: string;
   user: User;
 };
-

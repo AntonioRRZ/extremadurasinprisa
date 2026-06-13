@@ -7,6 +7,14 @@ def test_admin_permissions(client, user_token):
     assert response.status_code == 403
 
 
+def test_admin_dashboard_summary_shape(client, admin_token):
+    response = client.get("/api/v1/admin/dashboard/summary", headers=_headers(admin_token))
+    assert response.status_code == 200
+    data = response.json()
+    assert set(data.keys()) == {"users", "routes", "orders", "active_passports", "stamps"}
+    assert data["orders"] >= 1
+
+
 def test_admin_creates_route_and_stamp_point(client, admin_token):
     route_payload = {
         "slug": "ruta-nueva",

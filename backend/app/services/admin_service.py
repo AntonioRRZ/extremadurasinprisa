@@ -22,7 +22,7 @@ def dashboard_summary(db: Session) -> dict:
     return {
         "users": int(db.scalar(select(func.count(User.id))) or 0),
         "routes": int(db.scalar(select(func.count(Route.id))) or 0),
-        "paid_orders": int(db.scalar(select(func.count(Order.id)).where(Order.status == "paid")) or 0),
+        "orders": int(db.scalar(select(func.count(Order.id))) or 0),
         "active_passports": int(db.scalar(select(func.count(Passport.id)).where(Passport.operational_status.in_(["active", "completed"]))) or 0),
         "stamps": int(db.scalar(select(func.count(Stamp.id)).where(Stamp.validation_status == "valid")) or 0),
     }
@@ -138,4 +138,3 @@ def update_passport(db: Session, passport_id: int, payload: PassportUpdateReques
     db.commit()
     db.refresh(passport)
     return passport
-

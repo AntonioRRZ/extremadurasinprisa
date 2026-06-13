@@ -4,11 +4,13 @@ import { AppShell } from "./components/common/AppShell";
 import { AdminRoute } from "./routes/guards";
 import { ProtectedRoute } from "./routes/guards";
 import { AdminDashboardPage } from "./pages/admin/AdminDashboardPage";
+import { AdminActivePassportsPage } from "./pages/admin/AdminActivePassportsPage";
 import { AdminOrdersPage } from "./pages/admin/AdminOrdersPage";
 import { AdminPassportTypesPage } from "./pages/admin/AdminPassportTypesPage";
 import { AdminPassportsPage } from "./pages/admin/AdminPassportsPage";
 import { AdminRouteEditorPage } from "./pages/admin/AdminRouteEditorPage";
 import { AdminRoutesPage } from "./pages/admin/AdminRoutesPage";
+import { AdminStampsPage } from "./pages/admin/AdminStampsPage";
 import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
 import { ActivationRegisterPage } from "./pages/public/ActivationRegisterPage";
 import { CheckoutPage } from "./pages/public/CheckoutPage";
@@ -55,7 +57,9 @@ export default function App() {
             <Route path="/admin/rutas/:routeId" element={<AdminRouteEditorPage />} />
             <Route path="/admin/tipos" element={<AdminPassportTypesPage />} />
             <Route path="/admin/pasaportes" element={<AdminPassportsPage />} />
+            <Route path="/admin/pasaportes-activos" element={<AdminActivePassportsPage />} />
             <Route path="/admin/pedidos" element={<AdminOrdersPage />} />
+            <Route path="/admin/sellos" element={<AdminStampsPage />} />
           </Route>
         </Route>
       </Routes>

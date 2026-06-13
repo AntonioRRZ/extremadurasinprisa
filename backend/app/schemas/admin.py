@@ -6,7 +6,7 @@ from app.schemas.common import OrderSummary, PassportSummary, PassportTypeSummar
 class AdminSummary(BaseModel):
     users: int
     routes: int
-    paid_orders: int
+    orders: int
     active_passports: int
     stamps: int
 
@@ -147,4 +147,3 @@ class AdminPassportsResponse(BaseModel):
 
 class AdminOrdersResponse(BaseModel):
     orders: list[OrderSummary]
-
