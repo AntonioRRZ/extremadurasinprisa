@@ -1,0 +1,595 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap");
+
+:root {
+  --bg: #f3ecdf;
+  --bg-soft: #faf6ee;
+  --card: rgba(255, 250, 242, 0.82);
+  --line: rgba(61, 81, 57, 0.16);
+  --text: #233126;
+  --muted: #546657;
+  --accent: #2d5d47;
+  --accent-soft: #dbe7db;
+  --gold: #ab8a45;
+  --danger: #8c4c3f;
+  --shadow: 0 24px 60px rgba(36, 48, 39, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top right, rgba(171, 138, 69, 0.12), transparent 24%),
+    linear-gradient(180deg, #f5efe4 0%, #ebe5d8 100%);
+  color: var(--text);
+  font-family: "Manrope", sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.site-header,
+.site-footer,
+.page-shell,
+.home-page {
+  width: min(1180px, calc(100vw - 2rem));
+  margin: 0 auto;
+}
+
+.site-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 0;
+}
+
+.brand-mark {
+  display: inline-flex;
+  flex-direction: column;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.2rem;
+  color: var(--accent);
+}
+
+.brand-mark strong {
+  font-size: 2rem;
+  line-height: 0.9;
+}
+
+.site-nav {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  padding: 0.6rem 0.9rem;
+  border-radius: 999px;
+  color: var(--muted);
+}
+
+.nav-link.active,
+.nav-link:hover {
+  background: rgba(45, 93, 71, 0.08);
+  color: var(--accent);
+}
+
+.site-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.user-pill,
+.primary-button,
+.ghost-button,
+.route-tab,
+.passport-chip,
+.status-badge {
+  border-radius: 999px;
+}
+
+.primary-button,
+.ghost-button,
+.route-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  padding: 0.82rem 1.25rem;
+  transition: 0.2s ease;
+}
+
+.primary-button {
+  background: var(--accent);
+  color: #f8f5ee;
+}
+
+.primary-button:hover {
+  background: #204635;
+}
+
+.ghost-button,
+.route-tab {
+  background: rgba(255, 255, 255, 0.45);
+  border-color: var(--line);
+  color: var(--text);
+}
+
+.ghost-button:hover,
+.route-tab:hover,
+.route-tab.active {
+  border-color: rgba(45, 93, 71, 0.35);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.user-pill {
+  padding: 0.45rem 0.9rem;
+  background: rgba(45, 93, 71, 0.09);
+  color: var(--accent);
+}
+
+.hero-section,
+.route-highlight,
+.cta-section,
+.auth-card,
+.story-card,
+.passport-card,
+.route-card,
+.map-card,
+.metric-card,
+.scanner-card,
+.checkout-summary,
+.admin-form,
+.admin-table-wrap {
+  background: var(--card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.hero-section {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 2rem;
+  padding: 2rem;
+  border-radius: 36px;
+  overflow: hidden;
+  position: relative;
+}
+
+.hero-section::after {
+  content: "";
+  position: absolute;
+  inset: auto -8% -14% auto;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(171, 138, 69, 0.36), transparent 72%);
+}
+
+.hero-copy h1,
+.section-heading h1,
+.section-heading h2,
+.cta-section h2,
+.auth-card h1 {
+  font-family: "Cormorant Garamond", serif;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+
+.hero-copy h1 {
+  font-size: clamp(3.4rem, 7vw, 5.7rem);
+  margin: 0.3rem 0 1rem;
+}
+
+.hero-copy p,
+.section-heading p,
+.story-card p,
+.passport-card p,
+.route-card p,
+.metric-card span {
+  color: var(--muted);
+}
+
+.hero-panel {
+  display: grid;
+  place-items: center;
+}
+
+.passport-preview {
+  width: 100%;
+  min-height: 100%;
+  background:
+    linear-gradient(180deg, rgba(45, 93, 71, 0.96), rgba(31, 54, 41, 0.93)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 24px);
+  color: #f4ead7;
+  border-radius: 28px;
+  padding: 2rem;
+  position: relative;
+}
+
+.passport-preview::before {
+  content: "PASAPORTE";
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.35em;
+  color: rgba(244, 234, 215, 0.66);
+}
+
+.passport-chip {
+  display: inline-flex;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #f4ead7;
+}
+
+.passport-preview h2 {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.hero-stats,
+.mini-list {
+  padding-left: 1.2rem;
+  color: inherit;
+}
+
+.hero-actions,
+.route-inline-stats,
+.summary-line,
+.progress-label,
+.scanner-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.editorial-section,
+.page-shell {
+  padding: 2.25rem 0 0;
+}
+
+.section-heading {
+  max-width: 760px;
+  margin-bottom: 1.5rem;
+}
+
+.section-heading h1,
+.section-heading h2,
+.cta-section h2,
+.auth-card h1 {
+  margin: 0.2rem 0 0.8rem;
+  font-size: clamp(2.2rem, 4.2vw, 3.8rem);
+}
+
+.eyebrow {
+  display: inline-block;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.82rem;
+}
+
+.grid-3,
+.passport-grid,
+.route-detail-grid,
+.stats-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.grid-3,
+.stats-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.passport-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.route-detail-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.story-card,
+.passport-card,
+.metric-card,
+.route-card,
+.map-card,
+.scanner-card,
+.checkout-summary,
+.admin-form,
+.auth-card {
+  border-radius: 24px;
+  padding: 1.35rem;
+}
+
+.passport-card,
+.metric-card,
+.route-card,
+.story-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.passport-code {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 0.35rem 0.65rem;
+  background: rgba(45, 93, 71, 0.08);
+  color: var(--accent);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+}
+
+.route-highlight {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 1rem;
+  border-radius: 30px;
+  padding: 1.8rem;
+}
+
+.route-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.route-metrics div,
+.metric-card {
+  padding: 1rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.map-frame {
+  overflow: hidden;
+  border-radius: 20px;
+  height: 360px;
+}
+
+.cta-section {
+  margin: 2rem 0 2.5rem;
+  padding: 1.6rem 1.8rem;
+  border-radius: 28px;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.auth-shell {
+  width: min(540px, calc(100vw - 2rem));
+  margin: 2rem auto 0;
+}
+
+.auth-card,
+.admin-form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.auth-card label,
+.admin-form label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--muted);
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.66);
+  padding: 0.92rem 1rem;
+  color: var(--text);
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.field-error {
+  color: var(--danger);
+  margin: 0;
+}
+
+.checkout-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: 1rem;
+}
+
+.summary-line.total {
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--line);
+}
+
+.progress-track {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(45, 93, 71, 0.12);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--gold), var(--accent));
+}
+
+.status-badge {
+  display: inline-flex;
+  padding: 0.3rem 0.65rem;
+  background: rgba(84, 102, 87, 0.12);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.status-active,
+.status-paid,
+.status-valid,
+.status-success,
+.status-completed,
+.status-fully_stamped {
+  background: rgba(45, 93, 71, 0.12);
+  color: var(--accent);
+}
+
+.status-failed,
+.status-cancelled,
+.status-invalid {
+  background: rgba(140, 76, 63, 0.12);
+  color: var(--danger);
+}
+
+.scanner-viewport {
+  display: none;
+  min-height: 280px;
+  border-radius: 20px;
+  border: 1px dashed var(--line);
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.scanner-viewport.active {
+  display: block;
+}
+
+.scanner-manual {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.stamp-list,
+.route-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.route-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.route-tabs {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.9rem 0.85rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-table th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
+.checkbox-line {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.checkbox-line input {
+  width: auto;
+}
+
+.mono-text {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+
+.site-footer {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 3rem 0;
+  color: var(--muted);
+}
+
+@media (max-width: 920px) {
+  .site-header,
+  .hero-section,
+  .route-highlight,
+  .checkout-grid,
+  .grid-3,
+  .stats-grid,
+  .site-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .site-header {
+    justify-items: start;
+  }
+
+  .site-nav,
+  .site-actions {
+    justify-content: flex-start;
+  }
+
+  .route-card {
+    grid-template-columns: 1fr;
+  }
+
+  .route-metrics {
+    grid-template-columns: 1fr;
+  }
+}
