@@ -170,6 +170,25 @@ def test_public_route_preview_includes_interest_points(client):
 
 
 def test_admin_updates_existing_stamp_and_interest_points(client, admin_token):
+    updated_route = client.patch(
+        "/api/v1/admin/routes/1",
+        headers=_headers(admin_token),
+        json={
+            "title": "Dehesas y ciudades lentas revisada",
+            "subtitle": "Nueva lectura editorial",
+            "status": "draft",
+            "public_teaser_enabled": False,
+            "private_map_enabled": True,
+            "min_stamps_to_complete": 5,
+        },
+    )
+    assert updated_route.status_code == 200
+    assert updated_route.json()["title"] == "Dehesas y ciudades lentas revisada"
+    assert updated_route.json()["subtitle"] == "Nueva lectura editorial"
+    assert updated_route.json()["status"] == "draft"
+    assert updated_route.json()["public_teaser_enabled"] is False
+    assert updated_route.json()["min_stamps_to_complete"] == 5
+
     stamp_points = client.get("/api/v1/admin/routes/1/stamp-points", headers=_headers(admin_token))
     assert stamp_points.status_code == 200
     stamp_point_id = stamp_points.json()["stamp_points"][0]["id"]
@@ -181,12 +200,14 @@ def test_admin_updates_existing_stamp_and_interest_points(client, admin_token):
             "name": "Plasencia monumental revisado",
             "category": "historia",
             "is_public_preview": False,
+            "is_active": False,
         },
     )
     assert updated_stamp.status_code == 200
     assert updated_stamp.json()["name"] == "Plasencia monumental revisado"
     assert updated_stamp.json()["category"] == "historia"
     assert updated_stamp.json()["is_public_preview"] is False
+    assert updated_stamp.json()["is_active"] is False
 
     interest_points = client.get("/api/v1/admin/routes/1/interest-points", headers=_headers(admin_token))
     assert interest_points.status_code == 200
@@ -199,9 +220,11 @@ def test_admin_updates_existing_stamp_and_interest_points(client, admin_token):
             "name": "Area camper revisada",
             "point_type": "servicio",
             "pet_friendly": False,
+            "is_active": False,
         },
     )
     assert updated_interest.status_code == 200
     assert updated_interest.json()["name"] == "Area camper revisada"
     assert updated_interest.json()["point_type"] == "servicio"
     assert updated_interest.json()["pet_friendly"] is False
+    assert updated_interest.json()["is_active"] is False

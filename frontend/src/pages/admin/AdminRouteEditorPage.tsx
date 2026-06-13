@@ -19,6 +19,7 @@ type StampPointForm = {
   province: string;
   lat: number;
   lng: number;
+  is_active: boolean;
   is_public_preview: boolean;
 };
 
@@ -39,8 +40,20 @@ type InterestPointForm = {
   parking_notes: string;
   access_notes: string;
   pet_friendly: boolean;
+  is_active: boolean;
   is_public_preview: boolean;
   sort_order: number;
+};
+
+type RouteMetadataForm = {
+  title: string;
+  subtitle: string;
+  description_short: string;
+  province_scope: string;
+  status: string;
+  public_teaser_enabled: boolean;
+  private_map_enabled: boolean;
+  min_stamps_to_complete: number;
 };
 
 const interestPointTypes = ["mirador", "gastronomia", "pernocta", "servicio", "bano", "patrimonio", "naturaleza"];
@@ -54,18 +67,38 @@ export function AdminRouteEditorPage() {
   const [latestQr, setLatestQr] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<{ kind: "stamp" | "interest"; id: number } | null>(null);
   const [editorMessage, setEditorMessage] = useState<string | null>(null);
-  const stampForm = useForm<StampPointForm>();
+  const routeEditForm = useForm<RouteMetadataForm>({
+    defaultValues: {
+      status: "draft",
+      public_teaser_enabled: true,
+      private_map_enabled: true,
+      min_stamps_to_complete: 4,
+    },
+  });
+  const stampForm = useForm<StampPointForm>({
+    defaultValues: {
+      is_active: true,
+      is_public_preview: false,
+    },
+  });
   const interestForm = useForm<InterestPointForm>({
     defaultValues: {
       point_type: "mirador",
+      is_active: true,
       is_public_preview: true,
       sort_order: 0,
     },
   });
-  const stampEditForm = useForm<StampPointForm>();
+  const stampEditForm = useForm<StampPointForm>({
+    defaultValues: {
+      is_active: true,
+      is_public_preview: false,
+    },
+  });
   const interestEditForm = useForm<InterestPointForm>({
     defaultValues: {
       point_type: "mirador",
+      is_active: true,
       is_public_preview: true,
       sort_order: 0,
     },
@@ -90,6 +123,16 @@ export function AdminRouteEditorPage() {
       api.get<{ interest_points: InterestPoint[] }>(`/admin/routes/${routeId}/interest-points`, accessToken),
     ]);
     setRoute(routeData);
+    routeEditForm.reset({
+      title: routeData.title,
+      subtitle: routeData.subtitle,
+      description_short: routeData.description_short,
+      province_scope: routeData.province_scope,
+      status: routeData.status,
+      public_teaser_enabled: routeData.public_teaser_enabled,
+      private_map_enabled: routeData.private_map_enabled,
+      min_stamps_to_complete: routeData.min_stamps_to_complete,
+    });
     setStampPoints(stampData.stamp_points);
     setInterestPoints(interestData.interest_points);
     setSelectedItem((current) => {
@@ -128,6 +171,7 @@ export function AdminRouteEditorPage() {
       province: selectedStampPoint.province,
       lat: selectedStampPoint.lat,
       lng: selectedStampPoint.lng,
+      is_active: selectedStampPoint.is_active ?? true,
       is_public_preview: selectedStampPoint.is_public_preview,
     });
   }, [selectedStampPoint, stampEditForm]);
@@ -153,10 +197,30 @@ export function AdminRouteEditorPage() {
       parking_notes: selectedInterestPoint.parking_notes ?? "",
       access_notes: selectedInterestPoint.access_notes ?? "",
       pet_friendly: selectedInterestPoint.pet_friendly ?? false,
+      is_active: selectedInterestPoint.is_active ?? true,
       is_public_preview: selectedInterestPoint.is_public_preview,
       sort_order: selectedInterestPoint.sort_order ?? 0,
     });
   }, [selectedInterestPoint, interestEditForm]);
+
+  const onSubmitRouteMetadata = routeEditForm.handleSubmit(async (values) => {
+    if (!accessToken) {
+      return;
+    }
+    const updatedRoute = await api.patch<Route>(`/admin/routes/${routeId}`, values, accessToken);
+    setRoute(updatedRoute);
+    setEditorMessage("Ruta actualizada.");
+    routeEditForm.reset({
+      title: updatedRoute.title,
+      subtitle: updatedRoute.subtitle,
+      description_short: updatedRoute.description_short,
+      province_scope: updatedRoute.province_scope,
+      status: updatedRoute.status,
+      public_teaser_enabled: updatedRoute.public_teaser_enabled,
+      private_map_enabled: updatedRoute.private_map_enabled,
+      min_stamps_to_complete: updatedRoute.min_stamps_to_complete,
+    });
+  });
 
   const onSubmitStamp = stampForm.handleSubmit(async (values) => {
     if (!accessToken) {
@@ -178,6 +242,7 @@ export function AdminRouteEditorPage() {
     setEditorMessage("Punto de interes creado.");
     interestForm.reset({
       point_type: "mirador",
+      is_active: true,
       is_public_preview: true,
       sort_order: 0,
     });
@@ -217,6 +282,32 @@ export function AdminRouteEditorPage() {
     await load();
   };
 
+  const onToggleStampActive = async () => {
+    if (!accessToken || !selectedStampPoint) {
+      return;
+    }
+    await api.patch<StampPoint>(
+      `/admin/stamp-points/${selectedStampPoint.id}`,
+      { is_active: !(selectedStampPoint.is_active ?? true) },
+      accessToken,
+    );
+    setEditorMessage(selectedStampPoint.is_active ? "Punto oficial desactivado." : "Punto oficial activado.");
+    await load();
+  };
+
+  const onToggleInterestActive = async () => {
+    if (!accessToken || !selectedInterestPoint) {
+      return;
+    }
+    await api.patch<InterestPoint>(
+      `/admin/interest-points/${selectedInterestPoint.id}`,
+      { is_active: !(selectedInterestPoint.is_active ?? true) },
+      accessToken,
+    );
+    setEditorMessage(selectedInterestPoint.is_active ? "Punto de interes desactivado." : "Punto de interes activado.");
+    await load();
+  };
+
   return (
     <section className="page-shell">
       <div className="section-heading">
@@ -234,6 +325,47 @@ export function AdminRouteEditorPage() {
         </article>
       ) : null}
 
+      <section className="editorial-section">
+        <div className="section-heading">
+          <span className="eyebrow">Ruta</span>
+          <h2>Metadatos editoriales</h2>
+        </div>
+        <form className="admin-form admin-form-wide" onSubmit={onSubmitRouteMetadata}>
+          <div className="route-detail-grid">
+            <input {...routeEditForm.register("title")} placeholder="Titulo" />
+            <input {...routeEditForm.register("subtitle")} placeholder="Subtitulo" />
+            <input {...routeEditForm.register("province_scope")} placeholder="Provincias" />
+            <select {...routeEditForm.register("status")}>
+              <option value="draft">draft</option>
+              <option value="published">published</option>
+              <option value="archived">archived</option>
+            </select>
+            <input
+              {...routeEditForm.register("min_stamps_to_complete", { valueAsNumber: true })}
+              placeholder="Sellos minimos"
+              type="number"
+            />
+            <textarea {...routeEditForm.register("description_short")} placeholder="Descripcion corta" />
+          </div>
+          <div className="route-meta-toggles">
+            <label className="checkbox-line">
+              <input {...routeEditForm.register("public_teaser_enabled")} type="checkbox" />
+              Teaser publico activo
+            </label>
+            <label className="checkbox-line">
+              <input {...routeEditForm.register("private_map_enabled")} type="checkbox" />
+              Mapa privado activo
+            </label>
+          </div>
+          <div className="hero-actions">
+            <button className="primary-button" type="submit">
+              Guardar metadatos de ruta
+            </button>
+            {route ? <StatusBadge value={route.status} /> : null}
+          </div>
+        </form>
+      </section>
+
       <div className="route-detail-grid">
         <form className="admin-form" onSubmit={onSubmitStamp}>
           <h2>Punto oficial de sellado</h2>
@@ -247,6 +379,10 @@ export function AdminRouteEditorPage() {
           <input {...stampForm.register("lng", { valueAsNumber: true })} placeholder="Longitud" type="number" step="0.000001" />
           <textarea {...stampForm.register("description_public")} placeholder="Descripcion publica" />
           <textarea {...stampForm.register("description_private")} placeholder="Descripcion privada" />
+          <label className="checkbox-line">
+            <input {...stampForm.register("is_active")} type="checkbox" />
+            Punto activo
+          </label>
           <label className="checkbox-line">
             <input {...stampForm.register("is_public_preview")} type="checkbox" />
             Visible en teaser publico
@@ -280,6 +416,10 @@ export function AdminRouteEditorPage() {
           <textarea {...interestForm.register("schedule_notes")} placeholder="Notas de horario" />
           <textarea {...interestForm.register("parking_notes")} placeholder="Notas de aparcamiento" />
           <textarea {...interestForm.register("access_notes")} placeholder="Notas de acceso" />
+          <label className="checkbox-line">
+            <input {...interestForm.register("is_active")} type="checkbox" />
+            Punto activo
+          </label>
           <label className="checkbox-line">
             <input {...interestForm.register("pet_friendly")} type="checkbox" />
             Apto para mascota
@@ -326,7 +466,10 @@ export function AdminRouteEditorPage() {
                       {point.city}, {point.province}
                     </p>
                     <p>{point.description_public}</p>
-                    <StatusBadge value={point.is_public_preview ? "preview" : "private"} />
+                    <div className="inline-badges">
+                      <StatusBadge value={point.is_active ? "active" : "inactive"} />
+                      <StatusBadge value={point.is_public_preview ? "preview" : "private"} />
+                    </div>
                   </button>
                 ))}
               </div>
@@ -349,6 +492,10 @@ export function AdminRouteEditorPage() {
                       {point.city}, {point.province}
                     </p>
                     <p>{point.summary}</p>
+                    <div className="inline-badges">
+                      <StatusBadge value={point.is_active ? "active" : "inactive"} />
+                      <StatusBadge value={point.is_public_preview ? "preview" : "private"} />
+                    </div>
                   </button>
                 ))}
               </div>
@@ -363,7 +510,10 @@ export function AdminRouteEditorPage() {
                     <span className="eyebrow">Detalle</span>
                     <h2>{selectedStampPoint.name}</h2>
                   </div>
-                  <StatusBadge value="stamp_point" />
+                  <div className="inline-badges">
+                    <StatusBadge value="stamp_point" />
+                    <StatusBadge value={selectedStampPoint.is_active ? "active" : "inactive"} />
+                  </div>
                 </div>
                 <input {...stampEditForm.register("name")} placeholder="Nombre del punto" />
                 <input {...stampEditForm.register("slug")} placeholder="slug" />
@@ -376,6 +526,10 @@ export function AdminRouteEditorPage() {
                 <textarea {...stampEditForm.register("description_public")} placeholder="Descripcion publica" />
                 <textarea {...stampEditForm.register("description_private")} placeholder="Descripcion privada" />
                 <label className="checkbox-line">
+                  <input {...stampEditForm.register("is_active")} type="checkbox" />
+                  Punto activo
+                </label>
+                <label className="checkbox-line">
                   <input {...stampEditForm.register("is_public_preview")} type="checkbox" />
                   Visible en teaser publico
                 </label>
@@ -385,6 +539,9 @@ export function AdminRouteEditorPage() {
                   </button>
                   <button className="ghost-button" onClick={onRegenerateQr} type="button">
                     Regenerar QR
+                  </button>
+                  <button className="ghost-button" onClick={onToggleStampActive} type="button">
+                    {selectedStampPoint.is_active ? "Desactivar punto" : "Activar punto"}
                   </button>
                 </div>
               </form>
@@ -397,7 +554,10 @@ export function AdminRouteEditorPage() {
                     <span className="eyebrow">Detalle</span>
                     <h2>{selectedInterestPoint.name}</h2>
                   </div>
-                  <StatusBadge value={selectedInterestPoint.point_type} />
+                  <div className="inline-badges">
+                    <StatusBadge value={selectedInterestPoint.point_type} />
+                    <StatusBadge value={selectedInterestPoint.is_active ? "active" : "inactive"} />
+                  </div>
                 </div>
                 <input {...interestEditForm.register("name")} placeholder="Nombre del punto" />
                 <input {...interestEditForm.register("slug")} placeholder="slug" />
@@ -422,6 +582,10 @@ export function AdminRouteEditorPage() {
                 <textarea {...interestEditForm.register("parking_notes")} placeholder="Notas de aparcamiento" />
                 <textarea {...interestEditForm.register("access_notes")} placeholder="Notas de acceso" />
                 <label className="checkbox-line">
+                  <input {...interestEditForm.register("is_active")} type="checkbox" />
+                  Punto activo
+                </label>
+                <label className="checkbox-line">
                   <input {...interestEditForm.register("pet_friendly")} type="checkbox" />
                   Apto para mascota
                 </label>
@@ -431,6 +595,9 @@ export function AdminRouteEditorPage() {
                 </label>
                 <button className="primary-button" type="submit">
                   Guardar punto de interes
+                </button>
+                <button className="ghost-button" onClick={onToggleInterestActive} type="button">
+                  {selectedInterestPoint.is_active ? "Desactivar punto" : "Activar punto"}
                 </button>
               </form>
             ) : null}

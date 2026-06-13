@@ -606,6 +606,17 @@ textarea {
   top: 1rem;
 }
 
+.admin-form-wide {
+  gap: 1.1rem;
+}
+
+.route-meta-toggles,
+.inline-badges {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
 .selectable-card {
   width: 100%;
   text-align: left;
