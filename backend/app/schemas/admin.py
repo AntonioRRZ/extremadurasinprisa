@@ -1,6 +1,8 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
-from app.schemas.common import OrderSummary, PassportSummary, PassportTypeSummary, PrivateStampPoint, RouteDetail, UserSummary
+from app.schemas.common import OrderSummary, PassportSummary, PassportTypeSummary, PaymentSummary, PrivateStampPoint, RouteDetail, UserSummary
 
 
 class AdminSummary(BaseModel):
@@ -147,6 +149,28 @@ class AdminPassportsResponse(BaseModel):
 
 class AdminOrderSummary(OrderSummary):
     admin_notes: str | None
+
+
+class AdminOrderPassportSummary(BaseModel):
+    id: int
+    serial_number: str
+    passport_type_name: str
+    operational_status: str
+    activated_at: datetime | None
+    activated_by_user_id: int | None
+    activated_by_user_name: str | None
+    activated_by_user_email: str | None
+
+
+class AdminOrderDetail(AdminOrderSummary):
+    payments: list[PaymentSummary]
+    passports: list[AdminOrderPassportSummary]
+
+
+class AdminOrderUpdateRequest(BaseModel):
+    fulfillment_status: str | None = None
+    tracking_code: str | None = None
+    admin_notes: str | None = None
 
 
 class AdminOrdersResponse(BaseModel):

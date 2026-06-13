@@ -122,6 +122,22 @@ export type AdminOrder = Order & {
   admin_notes: string | null;
 };
 
+export type AdminOrderPassport = {
+  id: number;
+  serial_number: string;
+  passport_type_name: string;
+  operational_status: string;
+  activated_at: string | null;
+  activated_by_user_id: number | null;
+  activated_by_user_name: string | null;
+  activated_by_user_email: string | null;
+};
+
+export type AdminOrderDetail = AdminOrder & {
+  payments: Payment[];
+  passports: AdminOrderPassport[];
+};
+
 export type Payment = {
   id: number;
   order_id: number;

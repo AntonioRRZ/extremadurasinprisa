@@ -1,6 +1,6 @@
 from app.core.config import settings
 from app.models import Order, Passport, Payment, Stamp
-from app.schemas.admin import AdminOrderSummary
+from app.schemas.admin import AdminOrderDetail, AdminOrderPassportSummary, AdminOrderSummary
 from app.schemas.common import OrderItemSummary, OrderSummary, PassportSummary, PaymentSummary, StampSummary
 from app.services.passport_service import passport_to_summary
 
@@ -41,6 +41,28 @@ def serialize_admin_order(order: Order) -> AdminOrderSummary:
     return AdminOrderSummary(
         **summary.model_dump(),
         admin_notes=order.admin_notes,
+    )
+
+
+def serialize_admin_order_detail(order: Order) -> AdminOrderDetail:
+    summary = serialize_admin_order(order)
+    passports = [
+        AdminOrderPassportSummary(
+            id=passport.id,
+            serial_number=passport.serial_number,
+            passport_type_name=passport.passport_type.name,
+            operational_status=passport.operational_status,
+            activated_at=passport.activated_at,
+            activated_by_user_id=passport.activated_by_user_id,
+            activated_by_user_name=passport.activated_by_user.full_name if passport.activated_by_user else None,
+            activated_by_user_email=passport.activated_by_user.email if passport.activated_by_user else None,
+        )
+        for passport in order.passports
+    ]
+    return AdminOrderDetail(
+        **summary.model_dump(),
+        payments=[serialize_payment(payment) for payment in order.payments],
+        passports=passports,
     )
 
 

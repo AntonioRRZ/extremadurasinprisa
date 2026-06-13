@@ -5,6 +5,8 @@ from app.db.session import get_db
 from app.models import Passport, PassportType, Route, StampPoint
 from app.repositories import order_repository, route_repository, user_repository
 from app.schemas.admin import (
+    AdminOrderDetail,
+    AdminOrderUpdateRequest,
     AdminOrdersResponse,
     AdminPassportsResponse,
     AdminPassportTypesResponse,
@@ -26,7 +28,7 @@ from app.schemas.admin import (
 from app.schemas.common import PassportSummary, PassportTypeSummary, PrivateStampPoint, RouteDetail, UserSummary
 from app.security.deps import get_current_admin
 from app.services import admin_service, passport_service
-from app.services.serializers import serialize_admin_order, serialize_passport_summary
+from app.services.serializers import serialize_admin_order, serialize_admin_order_detail, serialize_passport_summary
 
 router = APIRouter()
 
@@ -126,3 +128,20 @@ def manual_stamp(passport_id: int, payload: ManualStampRequest, db: Session = De
 @router.get("/orders", response_model=AdminOrdersResponse)
 def admin_orders(db: Session = Depends(get_db), admin=Depends(get_current_admin)):
     return AdminOrdersResponse(orders=[serialize_admin_order(order) for order in order_repository.list_orders(db)])
+
+
+@router.get("/orders/{order_id}", response_model=AdminOrderDetail)
+def admin_order_detail(order_id: int, db: Session = Depends(get_db), admin=Depends(get_current_admin)):
+    order = admin_service.get_order_or_404(db, order_id)
+    return serialize_admin_order_detail(order)
+
+
+@router.patch("/orders/{order_id}", response_model=AdminOrderDetail)
+def admin_update_order(
+    order_id: int,
+    payload: AdminOrderUpdateRequest,
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin),
+):
+    order = admin_service.update_order(db, order_id, payload, admin.id)
+    return serialize_admin_order_detail(order)

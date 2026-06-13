@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -5,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.models import Order, Passport, PassportType, Route, Stamp, StampPoint, User
 from app.repositories import route_repository, user_repository
 from app.schemas.admin import (
+    AdminOrderUpdateRequest,
     PassportTypeCreateRequest,
     PassportTypeUpdateRequest,
     PassportUpdateRequest,
@@ -16,6 +19,9 @@ from app.schemas.admin import (
 )
 from app.services.audit import record_audit
 from app.services.utils import build_stamp_qr_payload, generate_stamp_secret, hash_value
+
+
+FULFILLMENT_STATUSES = {"received", "preparing", "shipped", "delivered", "cancelled"}
 
 
 def dashboard_summary(db: Session) -> dict:
@@ -138,3 +144,48 @@ def update_passport(db: Session, passport_id: int, payload: PassportUpdateReques
     db.commit()
     db.refresh(passport)
     return passport
+
+
+def get_order_or_404(db: Session, order_id: int) -> Order:
+    order = db.get(Order, order_id)
+    if order is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+    return order
+
+
+def update_order(db: Session, order_id: int, payload: AdminOrderUpdateRequest, actor_user_id: int) -> Order:
+    order = get_order_or_404(db, order_id)
+    now = datetime.now(UTC).replace(tzinfo=None)
+
+    if payload.fulfillment_status is not None:
+        if payload.fulfillment_status not in FULFILLMENT_STATUSES:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid fulfillment status")
+        order.fulfillment_status = payload.fulfillment_status
+        if payload.fulfillment_status == "shipped" and order.shipped_at is None:
+            order.shipped_at = now
+        if payload.fulfillment_status == "delivered":
+            if order.shipped_at is None:
+                order.shipped_at = now
+            if order.delivered_at is None:
+                order.delivered_at = now
+
+    if payload.tracking_code is not None:
+        order.tracking_code = payload.tracking_code.strip() or None
+
+    if payload.admin_notes is not None:
+        order.admin_notes = payload.admin_notes.strip() or None
+
+    record_audit(
+        db,
+        "admin.order_updated",
+        "order",
+        str(order.id),
+        actor_user_id=actor_user_id,
+        metadata={
+            "fulfillment_status": order.fulfillment_status,
+            "tracking_code": order.tracking_code,
+        },
+    )
+    db.commit()
+    db.refresh(order)
+    return order

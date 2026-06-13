@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { api, formatDate, formatPrice } from "../../api/client";
 import { AdminTable } from "../../components/common/AdminTable";
@@ -24,7 +25,7 @@ export function AdminOrdersPage() {
         <h1>Pedidos</h1>
       </div>
       <AdminTable
-        headers={["Pedido", "Comprador", "Fecha", "Importe", "Pago", "Operacion", "Tracking"]}
+        headers={["Pedido", "Comprador", "Fecha", "Importe", "Pago", "Operacion", "Tracking", "Detalle"]}
         rows={orders.map((order) => [
           `#${order.id}`,
           `${order.buyer_name} (${order.buyer_email})`,
@@ -33,6 +34,7 @@ export function AdminOrdersPage() {
           <StatusBadge key={order.id} value={order.status} />,
           <StatusBadge key={`fulfillment-${order.id}`} value={order.fulfillment_status} />,
           order.tracking_code ?? "Pendiente",
+          <Link className="ghost-button" key={`detail-${order.id}`} to={`/admin/pedidos/${order.id}`}>Abrir</Link>,
         ])}
       />
     </section>

@@ -5,6 +5,7 @@ import { AdminRoute } from "./routes/guards";
 import { ProtectedRoute } from "./routes/guards";
 import { AdminDashboardPage } from "./pages/admin/AdminDashboardPage";
 import { AdminActivePassportsPage } from "./pages/admin/AdminActivePassportsPage";
+import { AdminOrderDetailPage } from "./pages/admin/AdminOrderDetailPage";
 import { AdminOrdersPage } from "./pages/admin/AdminOrdersPage";
 import { AdminPassportTypesPage } from "./pages/admin/AdminPassportTypesPage";
 import { AdminPassportsPage } from "./pages/admin/AdminPassportsPage";
@@ -59,6 +60,7 @@ export default function App() {
             <Route path="/admin/pasaportes" element={<AdminPassportsPage />} />
             <Route path="/admin/pasaportes-activos" element={<AdminActivePassportsPage />} />
             <Route path="/admin/pedidos" element={<AdminOrdersPage />} />
+            <Route path="/admin/pedidos/:orderId" element={<AdminOrderDetailPage />} />
             <Route path="/admin/sellos" element={<AdminStampsPage />} />
           </Route>
         </Route>

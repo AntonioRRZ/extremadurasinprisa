@@ -24,6 +24,34 @@ def test_admin_orders_include_fulfillment_fields(client, admin_token):
     assert "admin_notes" in order
 
 
+def test_admin_order_detail_and_update(client, admin_token):
+    orders_response = client.get("/api/v1/admin/orders", headers=_headers(admin_token))
+    assert orders_response.status_code == 200
+    order_id = orders_response.json()["orders"][0]["id"]
+
+    detail_response = client.get(f"/api/v1/admin/orders/{order_id}", headers=_headers(admin_token))
+    assert detail_response.status_code == 200
+    detail = detail_response.json()
+    assert "payments" in detail
+    assert "passports" in detail
+
+    update_response = client.patch(
+        f"/api/v1/admin/orders/{order_id}",
+        headers=_headers(admin_token),
+        json={
+            "fulfillment_status": "shipped",
+            "tracking_code": "ESP-TRACK-999",
+            "admin_notes": "Preparado y entregado al operador logistico.",
+        },
+    )
+    assert update_response.status_code == 200
+    updated = update_response.json()
+    assert updated["fulfillment_status"] == "shipped"
+    assert updated["tracking_code"] == "ESP-TRACK-999"
+    assert updated["admin_notes"] == "Preparado y entregado al operador logistico."
+    assert updated["shipped_at"] is not None
+
+
 def test_admin_creates_route_and_stamp_point(client, admin_token):
     route_payload = {
         "slug": "ruta-nueva",
