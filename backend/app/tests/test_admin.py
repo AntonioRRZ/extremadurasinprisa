@@ -84,6 +84,27 @@ def test_admin_order_detail_and_update(client, admin_token):
     assert updated["shipped_at"] is not None
 
 
+def test_admin_active_passports_list_and_detail(client, admin_token):
+    response = client.get("/api/v1/admin/active-passports", headers=_headers(admin_token))
+    assert response.status_code == 200
+    passports = response.json()["passports"]
+    assert len(passports) == 1
+    assert passports[0]["passport"]["operational_status"] == "active"
+    assert passports[0]["user"]["email"] == "user@example.com"
+    assert passports[0]["last_stamp"]["stamp_point_name"] == "Plasencia monumental"
+    assert passports[0]["last_stamp_point"]["city"] == "Plasencia"
+
+    passport_id = passports[0]["passport"]["id"]
+    detail_response = client.get(f"/api/v1/admin/active-passports/{passport_id}", headers=_headers(admin_token))
+    assert detail_response.status_code == 200
+    detail = detail_response.json()
+    assert detail["passport"]["serial_number"]
+    assert detail["route"]["title"] == "Dehesas y ciudades lentas"
+    assert len(detail["stamp_points"]) >= 1
+    assert len(detail["stamps"]) == 1
+    assert detail["last_stamp"]["stamp_point_name"] == "Plasencia monumental"
+
+
 def test_admin_creates_route_stamp_point_and_interest_point(client, admin_token):
     route_payload = {
         "slug": "ruta-nueva",

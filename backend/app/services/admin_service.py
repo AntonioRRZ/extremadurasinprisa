@@ -5,8 +5,10 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models import InterestPoint, Order, Passport, PassportType, Route, Stamp, StampPoint, User
-from app.repositories import route_repository, user_repository
+from app.repositories import passport_repository, route_repository, user_repository
 from app.schemas.admin import (
+    AdminActivePassportDetail,
+    AdminActivePassportListItem,
     AdminUserDetail,
     AdminUserListItem,
     AdminUserPassportDetail,
@@ -39,6 +41,11 @@ def _passport_status(passports: list[Passport]) -> str:
     return "active" if _active_passports(passports) else "inactive"
 
 
+def _last_valid_stamp(passport: Passport) -> Stamp | None:
+    valid_stamps = [stamp for stamp in passport.stamps if stamp.validation_status == "valid"]
+    return max(valid_stamps, key=lambda stamp: stamp.stamped_at, default=None)
+
+
 def _valid_stamps(passports: list[Passport]) -> list[Stamp]:
     stamps: list[Stamp] = []
     for passport in passports:
@@ -69,6 +76,37 @@ def _serialize_admin_user_list_item(user: User) -> AdminUserListItem:
 
 def list_admin_users(db: Session) -> list[AdminUserListItem]:
     return [_serialize_admin_user_list_item(user) for user in user_repository.list_admin_users(db)]
+
+
+def _serialize_admin_active_passport(db: Session, passport: Passport) -> AdminActivePassportListItem:
+    last_stamp = _last_valid_stamp(passport)
+    return AdminActivePassportListItem(
+        passport=serialize_passport_summary(db, passport),
+        user=UserSummary.model_validate(passport.activated_by_user),
+        last_stamp=serialize_stamp(last_stamp) if last_stamp else None,
+        last_stamp_point=PrivateStampPoint.model_validate(last_stamp.stamp_point) if last_stamp else None,
+    )
+
+
+def list_admin_active_passports(db: Session) -> list[AdminActivePassportListItem]:
+    passports = passport_repository.list_admin_active_passports(db)
+    return [_serialize_admin_active_passport(db, passport) for passport in passports if passport.activated_by_user is not None]
+
+
+def get_admin_active_passport_detail(db: Session, passport_id: int) -> AdminActivePassportDetail:
+    passport = passport_repository.get_admin_active_passport(db, passport_id)
+    if passport is None or passport.activated_by_user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Active passport not found")
+    last_stamp = _last_valid_stamp(passport)
+    return AdminActivePassportDetail(
+        passport=serialize_passport_summary(db, passport),
+        user=UserSummary.model_validate(passport.activated_by_user),
+        route=RouteDetail.model_validate(passport.route),
+        stamp_points=[PrivateStampPoint.model_validate(point) for point in sorted(passport.route.stamp_points, key=lambda point: point.id)],
+        stamps=[serialize_stamp(stamp) for stamp in sorted(passport.stamps, key=lambda item: item.stamped_at)],
+        last_stamp=serialize_stamp(last_stamp) if last_stamp else None,
+        last_stamp_point=PrivateStampPoint.model_validate(last_stamp.stamp_point) if last_stamp else None,
+    )
 
 
 def get_admin_user_detail(db: Session, user_id: int) -> AdminUserDetail:

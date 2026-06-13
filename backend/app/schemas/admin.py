@@ -175,6 +175,23 @@ class AdminUsersResponse(BaseModel):
     users: list["AdminUserListItem"]
 
 
+class AdminActivePassportListItem(BaseModel):
+    passport: PassportSummary
+    user: UserSummary
+    last_stamp: StampSummary | None
+    last_stamp_point: PrivateStampPoint | None
+
+
+class AdminActivePassportDetail(BaseModel):
+    passport: PassportSummary
+    user: UserSummary
+    route: RouteDetail
+    stamp_points: list[PrivateStampPoint]
+    stamps: list[StampSummary]
+    last_stamp: StampSummary | None
+    last_stamp_point: PrivateStampPoint | None
+
+
 class AdminRoutesResponse(BaseModel):
     routes: list[RouteDetail]
 
@@ -223,6 +240,10 @@ class AdminOrderUpdateRequest(BaseModel):
 
 class AdminOrdersResponse(BaseModel):
     orders: list[AdminOrderSummary]
+
+
+class AdminActivePassportsResponse(BaseModel):
+    passports: list[AdminActivePassportListItem]
 
 
 class AdminUserListItem(UserSummary):

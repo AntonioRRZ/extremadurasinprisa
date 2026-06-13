@@ -5,6 +5,8 @@ from app.db.session import get_db
 from app.models import Passport, PassportType, Route
 from app.repositories import order_repository, route_repository
 from app.schemas.admin import (
+    AdminActivePassportDetail,
+    AdminActivePassportsResponse,
     AdminInterestPointsResponse,
     AdminOrderDetail,
     AdminOrderUpdateRequest,
@@ -135,6 +137,16 @@ def update_passport_type(passport_type_id: int, payload: PassportTypeUpdateReque
 def admin_passports(db: Session = Depends(get_db), admin=Depends(get_current_admin)):
     passports = list(db.query(Passport).order_by(Passport.created_at.desc()))
     return AdminPassportsResponse(passports=[serialize_passport_summary(db, passport) for passport in passports])
+
+
+@router.get("/active-passports", response_model=AdminActivePassportsResponse)
+def admin_active_passports(db: Session = Depends(get_db), admin=Depends(get_current_admin)):
+    return AdminActivePassportsResponse(passports=admin_service.list_admin_active_passports(db))
+
+
+@router.get("/active-passports/{passport_id}", response_model=AdminActivePassportDetail)
+def admin_active_passport_detail(passport_id: int, db: Session = Depends(get_db), admin=Depends(get_current_admin)):
+    return admin_service.get_admin_active_passport_detail(db, passport_id)
 
 
 @router.patch("/passports/{passport_id}", response_model=PassportSummary)

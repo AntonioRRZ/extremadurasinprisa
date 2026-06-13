@@ -1,7 +1,7 @@
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
-from app.models import Passport, Stamp, StampPoint
+from app.models import Passport, Route, Stamp, StampPoint
 
 
 def get_by_activation_code(db: Session, activation_code: str) -> Passport | None:
@@ -38,3 +38,31 @@ def list_passport_stamps(db: Session, passport_id: int) -> list[Stamp]:
 def get_stamp_point_by_public_code(db: Session, public_code: str) -> StampPoint | None:
     return db.scalar(select(StampPoint).where(StampPoint.qr_public_code == public_code))
 
+
+def list_admin_active_passports(db: Session) -> list[Passport]:
+    query = (
+        select(Passport)
+        .where(Passport.operational_status == "active")
+        .options(
+            selectinload(Passport.activated_by_user),
+            selectinload(Passport.passport_type),
+            selectinload(Passport.route).selectinload(Route.stamp_points),
+            selectinload(Passport.stamps).selectinload(Stamp.stamp_point),
+        )
+        .order_by(Passport.activated_at.desc(), Passport.created_at.desc())
+    )
+    return list(db.scalars(query))
+
+
+def get_admin_active_passport(db: Session, passport_id: int) -> Passport | None:
+    query = (
+        select(Passport)
+        .where(Passport.id == passport_id, Passport.operational_status == "active")
+        .options(
+            selectinload(Passport.activated_by_user),
+            selectinload(Passport.passport_type),
+            selectinload(Passport.route).selectinload(Route.stamp_points),
+            selectinload(Passport.stamps).selectinload(Stamp.stamp_point),
+        )
+    )
+    return db.scalar(query)
