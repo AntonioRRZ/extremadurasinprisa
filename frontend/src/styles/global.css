@@ -589,6 +589,57 @@ textarea {
   overflow-x: auto;
 }
 
+.admin-editor-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(320px, 0.85fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.admin-editor-lists {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-editor-panel {
+  position: sticky;
+  top: 1rem;
+}
+
+.selectable-card {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.45);
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.selectable-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(45, 93, 71, 0.28);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.selectable-card.active {
+  border-color: rgba(45, 93, 71, 0.42);
+  background: rgba(219, 231, 219, 0.62);
+}
+
+.card-kicker {
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.78rem;
+}
+
+.editor-panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 .checkbox-line {
   display: flex;
   align-items: center;
@@ -638,5 +689,13 @@ textarea {
 
   .route-metrics {
     grid-template-columns: 1fr;
+  }
+
+  .admin-editor-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-editor-panel {
+    position: static;
   }
 }

@@ -167,3 +167,41 @@ def test_public_route_preview_includes_interest_points(client):
     preview_points = response.json()
     assert preview_points
     assert "point_type" in preview_points[0]
+
+
+def test_admin_updates_existing_stamp_and_interest_points(client, admin_token):
+    stamp_points = client.get("/api/v1/admin/routes/1/stamp-points", headers=_headers(admin_token))
+    assert stamp_points.status_code == 200
+    stamp_point_id = stamp_points.json()["stamp_points"][0]["id"]
+
+    updated_stamp = client.patch(
+        f"/api/v1/admin/stamp-points/{stamp_point_id}",
+        headers=_headers(admin_token),
+        json={
+            "name": "Plasencia monumental revisado",
+            "category": "historia",
+            "is_public_preview": False,
+        },
+    )
+    assert updated_stamp.status_code == 200
+    assert updated_stamp.json()["name"] == "Plasencia monumental revisado"
+    assert updated_stamp.json()["category"] == "historia"
+    assert updated_stamp.json()["is_public_preview"] is False
+
+    interest_points = client.get("/api/v1/admin/routes/1/interest-points", headers=_headers(admin_token))
+    assert interest_points.status_code == 200
+    interest_point_id = interest_points.json()["interest_points"][0]["id"]
+
+    updated_interest = client.patch(
+        f"/api/v1/admin/interest-points/{interest_point_id}",
+        headers=_headers(admin_token),
+        json={
+            "name": "Area camper revisada",
+            "point_type": "servicio",
+            "pet_friendly": False,
+        },
+    )
+    assert updated_interest.status_code == 200
+    assert updated_interest.json()["name"] == "Area camper revisada"
+    assert updated_interest.json()["point_type"] == "servicio"
+    assert updated_interest.json()["pet_friendly"] is False
