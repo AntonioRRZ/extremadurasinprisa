@@ -9,7 +9,15 @@ type AuthContextValue = {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (payload: { email: string; password: string; full_name: string; phone?: string }) => Promise<void>;
+  activationRegister: (payload: {
+    activation_code: string;
+    email: string;
+    password: string;
+    full_name: string;
+    phone?: string;
+    owner_display_name?: string;
+    start_date?: string;
+  }) => Promise<void>;
   logout: () => void;
 };
 
@@ -79,8 +87,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
     applySession(session);
   };
 
-  const register = async (payload: { email: string; password: string; full_name: string; phone?: string }) => {
-    const session = await api.post<SessionPayload>("/auth/register", payload);
+  const activationRegister = async (payload: {
+    activation_code: string;
+    email: string;
+    password: string;
+    full_name: string;
+    phone?: string;
+    owner_display_name?: string;
+    start_date?: string;
+  }) => {
+    const session = await api.post<SessionPayload>("/auth/activation/register", payload);
     applySession(session);
   };
 
@@ -92,7 +108,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   };
 
   return (
-    <AuthContext.Provider value={{ accessToken, refreshToken, user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ accessToken, refreshToken, user, loading, login, activationRegister, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -105,4 +121,3 @@ export function useAuth() {
   }
   return context;
 }
-

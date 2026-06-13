@@ -160,11 +160,10 @@ export function HomePage() {
             Activar pasaporte
           </Link>
           <Link className="ghost-button" to="/register">
-            Crear cuenta
+            Alta con codigo
           </Link>
         </div>
       </section>
     </div>
   );
 }
-

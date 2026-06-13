@@ -90,8 +90,8 @@ El seed crea:
 
 ## Como activar un pasaporte
 
-1. Inicia sesion o registrate.
-2. Abre `/activar`.
+1. Si es tu primer acceso, abre `/register` y completa el alta con el codigo unico del pasaporte.
+2. Si ya tienes cuenta, inicia sesion y abre `/activar`.
 3. Introduce un codigo unico. El seed deja listo `DEMO-ACT-001`.
 4. Al activarlo se desbloquea el detalle privado en `/mi/pasaportes`.
 
@@ -120,7 +120,7 @@ El seed crea:
 - `GET /api/v1/routes/{slug}`
 - `GET /api/v1/routes/{slug}/passport-types`
 - `GET /api/v1/routes/{slug}/stamp-points/public`
-- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/activation/register`
 - `POST /api/v1/auth/login`
 - `POST /api/v1/auth/refresh`
 - `POST /api/v1/orders`
@@ -173,8 +173,7 @@ El seed crea:
 1. Levantar backend y frontend.
 2. Comprobar `GET /api/v1/health`.
 3. Navegar home, rutas y catalogo.
-4. Registrar usuario o usar credenciales demo.
+4. Dar de alta un usuario con codigo unico o usar credenciales demo.
 5. Simular una compra mock.
 6. Activar `DEMO-ACT-001`.
 7. Generar un QR desde admin y sellar el pasaporte.
-

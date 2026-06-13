@@ -10,12 +10,12 @@ import { AdminPassportsPage } from "./pages/admin/AdminPassportsPage";
 import { AdminRouteEditorPage } from "./pages/admin/AdminRouteEditorPage";
 import { AdminRoutesPage } from "./pages/admin/AdminRoutesPage";
 import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
+import { ActivationRegisterPage } from "./pages/public/ActivationRegisterPage";
 import { CheckoutPage } from "./pages/public/CheckoutPage";
 import { HomePage } from "./pages/public/HomePage";
 import { LoginPage } from "./pages/public/LoginPage";
 import { PassportCatalogPage } from "./pages/public/PassportCatalogPage";
 import { PaymentResultPage } from "./pages/public/PaymentResultPage";
-import { RegisterPage } from "./pages/public/RegisterPage";
 import { RouteDetailPage } from "./pages/public/RouteDetailPage";
 import { RoutesPage } from "./pages/public/RoutesPage";
 import { ActivatePassportPage } from "./pages/user/ActivatePassportPage";
@@ -37,7 +37,7 @@ export default function App() {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/checkout/resultado" element={<PaymentResultPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register" element={<ActivationRegisterPage />} />
           <Route path="/activar" element={<ActivatePassportPage />} />
 
           <Route element={<ProtectedRoute />}>
@@ -62,4 +62,3 @@ export default function App() {
     </BrowserRouter>
   );
 }
-

@@ -51,10 +51,9 @@ export function LoginPage() {
           {isSubmitting ? "Entrando..." : "Entrar"}
         </button>
         <p>
-          No tienes cuenta? <Link to="/register">Registrate</Link>
+          Tienes el pasaporte fisico? <Link to="/register">Crea tu cuenta con el codigo unico</Link>
         </p>
       </form>
     </section>
   );
 }
-

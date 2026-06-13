@@ -51,7 +51,7 @@ export function PaymentResultPage() {
       ) : null}
       <div className="hero-actions">
         <Link className="primary-button" to="/activar">
-          Activar un pasaporte
+          Activar o dar de alta
         </Link>
         <Link className="ghost-button" to="/catalogo">
           Volver al catalogo
@@ -60,4 +60,3 @@ export function PaymentResultPage() {
     </section>
   );
 }
-

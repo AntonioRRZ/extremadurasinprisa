@@ -50,7 +50,7 @@ export function AppShell() {
                 Entrar
               </NavLink>
               <NavLink to="/register" className="primary-button">
-                Crear cuenta
+                Alta con codigo
               </NavLink>
             </>
           )}
@@ -73,4 +73,3 @@ export function AppShell() {
     </div>
   );
 }
-
