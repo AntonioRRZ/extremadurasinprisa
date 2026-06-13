@@ -1,5 +1,6 @@
 from app.models.entities import (
     AuditLog,
+    InterestPoint,
     Order,
     OrderItem,
     Passport,
@@ -13,6 +14,7 @@ from app.models.entities import (
 
 __all__ = [
     "AuditLog",
+    "InterestPoint",
     "Order",
     "OrderItem",
     "Passport",
@@ -23,4 +25,3 @@ __all__ = [
     "StampPoint",
     "User",
 ]
-

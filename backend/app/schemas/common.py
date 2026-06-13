@@ -69,6 +69,34 @@ class PrivateStampPoint(PublicStampPoint):
     is_active: bool
 
 
+class PublicInterestPoint(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    slug: str
+    point_type: str
+    summary: str
+    city: str
+    province: str
+    lat: Decimal
+    lng: Decimal
+    is_public_preview: bool
+
+
+class PrivateInterestPoint(PublicInterestPoint):
+    description: str
+    address: str
+    website_url: str | None
+    contact_phone: str | None
+    schedule_notes: str | None
+    parking_notes: str | None
+    access_notes: str | None
+    pet_friendly: bool
+    is_active: bool
+    sort_order: int
+
+
 class PassportTypeSummary(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.schemas.common import PassportTypeSummary, PublicStampPoint, RouteDetail, RouteSummary
+from app.schemas.common import PassportTypeSummary, PublicInterestPoint, PublicStampPoint, RouteDetail, RouteSummary
 from app.services import public_service
 
 router = APIRouter()
@@ -27,3 +27,7 @@ def route_passport_types(slug: str, db: Session = Depends(get_db)):
 def public_stamp_points(slug: str, db: Session = Depends(get_db)):
     return public_service.get_public_route_stamp_points(db, slug)
 
+
+@router.get("/routes/{slug}/interest-points/public", response_model=list[PublicInterestPoint])
+def public_interest_points(slug: str, db: Session = Depends(get_db)):
+    return public_service.get_public_route_interest_points(db, slug)

@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Route, StampPoint
+from app.models import InterestPoint, Route, StampPoint
 
 
 def list_published_routes(db: Session) -> list[Route]:
@@ -28,3 +28,16 @@ def list_public_stamp_points(db: Session, route_id: int) -> list[StampPoint]:
 def list_route_stamp_points(db: Session, route_id: int) -> list[StampPoint]:
     return list(db.scalars(select(StampPoint).where(StampPoint.route_id == route_id).order_by(StampPoint.name)))
 
+
+def list_public_interest_points(db: Session, route_id: int) -> list[InterestPoint]:
+    query = select(InterestPoint).where(
+        InterestPoint.route_id == route_id,
+        InterestPoint.is_active.is_(True),
+        InterestPoint.is_public_preview.is_(True),
+    )
+    return list(db.scalars(query.order_by(InterestPoint.sort_order.asc(), InterestPoint.name.asc())))
+
+
+def list_route_interest_points(db: Session, route_id: int) -> list[InterestPoint]:
+    query = select(InterestPoint).where(InterestPoint.route_id == route_id).order_by(InterestPoint.sort_order.asc(), InterestPoint.name.asc())
+    return list(db.scalars(query))

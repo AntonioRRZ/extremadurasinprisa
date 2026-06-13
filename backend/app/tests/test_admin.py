@@ -84,7 +84,7 @@ def test_admin_order_detail_and_update(client, admin_token):
     assert updated["shipped_at"] is not None
 
 
-def test_admin_creates_route_and_stamp_point(client, admin_token):
+def test_admin_creates_route_stamp_point_and_interest_point(client, admin_token):
     route_payload = {
         "slug": "ruta-nueva",
         "title": "Ruta Nueva",
@@ -126,3 +126,44 @@ def test_admin_creates_route_and_stamp_point(client, admin_token):
     )
     assert created_stamp.status_code == 200
     assert created_stamp.json()["qr_value"].startswith("ESPSTAMP|")
+
+    interest_payload = {
+        "name": "Mirador del valle",
+        "slug": "mirador-del-valle",
+        "point_type": "mirador",
+        "summary": "Parada escenica con buena lectura del paisaje.",
+        "description": "Mirador recomendado para amanecer o ultima luz.",
+        "address": "Carretera local s/n",
+        "city": "Plasencia",
+        "province": "Caceres",
+        "lat": 39.98,
+        "lng": -6.01,
+        "website_url": "https://example.com/mirador",
+        "contact_phone": "+34 600 000 999",
+        "schedule_notes": "Acceso libre",
+        "parking_notes": "Apartadero corto",
+        "access_notes": "Ultimo tramo estrecho",
+        "pet_friendly": True,
+        "is_public_preview": True,
+        "is_active": True,
+        "sort_order": 1,
+    }
+    created_interest = client.post(
+        f"/api/v1/admin/routes/{route_id}/interest-points",
+        headers=_headers(admin_token),
+        json=interest_payload,
+    )
+    assert created_interest.status_code == 200
+    assert created_interest.json()["point_type"] == "mirador"
+
+    listed_interest = client.get(f"/api/v1/admin/routes/{route_id}/interest-points", headers=_headers(admin_token))
+    assert listed_interest.status_code == 200
+    assert len(listed_interest.json()["interest_points"]) == 1
+
+
+def test_public_route_preview_includes_interest_points(client):
+    response = client.get("/api/v1/routes/dehesas-y-ciudades-lentas/interest-points/public")
+    assert response.status_code == 200
+    preview_points = response.json()
+    assert preview_points
+    assert "point_type" in preview_points[0]

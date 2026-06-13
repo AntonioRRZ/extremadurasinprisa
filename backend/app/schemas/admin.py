@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from app.schemas.common import OrderSummary, PassportSummary, PassportTypeSummary, PaymentSummary, PrivateStampPoint, RouteDetail, StampSummary, UserSummary
+from app.schemas.common import OrderSummary, PassportSummary, PassportTypeSummary, PaymentSummary, PrivateInterestPoint, PrivateStampPoint, RouteDetail, StampSummary, UserSummary
 
 
 class AdminSummary(BaseModel):
@@ -89,6 +89,50 @@ class StampPointAdminResponse(BaseModel):
     qr_value: str
 
 
+class InterestPointCreateRequest(BaseModel):
+    name: str
+    slug: str
+    point_type: str
+    summary: str
+    description: str
+    address: str
+    city: str
+    province: str
+    lat: float
+    lng: float
+    website_url: str | None = None
+    contact_phone: str | None = None
+    schedule_notes: str | None = None
+    parking_notes: str | None = None
+    access_notes: str | None = None
+    pet_friendly: bool = False
+    is_public_preview: bool = True
+    is_active: bool = True
+    sort_order: int = 0
+
+
+class InterestPointUpdateRequest(BaseModel):
+    name: str | None = None
+    slug: str | None = None
+    point_type: str | None = None
+    summary: str | None = None
+    description: str | None = None
+    address: str | None = None
+    city: str | None = None
+    province: str | None = None
+    lat: float | None = None
+    lng: float | None = None
+    website_url: str | None = None
+    contact_phone: str | None = None
+    schedule_notes: str | None = None
+    parking_notes: str | None = None
+    access_notes: str | None = None
+    pet_friendly: bool | None = None
+    is_public_preview: bool | None = None
+    is_active: bool | None = None
+    sort_order: int | None = None
+
+
 class PassportTypeCreateRequest(BaseModel):
     route_id: int
     code: str
@@ -137,6 +181,10 @@ class AdminRoutesResponse(BaseModel):
 
 class AdminStampPointsResponse(BaseModel):
     stamp_points: list[PrivateStampPoint]
+
+
+class AdminInterestPointsResponse(BaseModel):
+    interest_points: list[PrivateInterestPoint]
 
 
 class AdminPassportTypesResponse(BaseModel):

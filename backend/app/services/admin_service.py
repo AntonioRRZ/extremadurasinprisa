@@ -4,13 +4,15 @@ from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.models import Order, Passport, PassportType, Route, Stamp, StampPoint, User
+from app.models import InterestPoint, Order, Passport, PassportType, Route, Stamp, StampPoint, User
 from app.repositories import route_repository, user_repository
 from app.schemas.admin import (
     AdminUserDetail,
     AdminUserListItem,
     AdminUserPassportDetail,
     AdminOrderUpdateRequest,
+    InterestPointCreateRequest,
+    InterestPointUpdateRequest,
     PassportTypeCreateRequest,
     PassportTypeUpdateRequest,
     PassportUpdateRequest,
@@ -189,6 +191,31 @@ def regenerate_stamp_point_qr(db: Session, stamp_point_id: int, actor_user_id: i
     db.commit()
     db.refresh(stamp_point)
     return stamp_point, build_stamp_qr_payload(stamp_point.qr_public_code, secret)
+
+
+def create_interest_point(db: Session, route_id: int, payload: InterestPointCreateRequest, actor_user_id: int) -> InterestPoint:
+    route = route_repository.get_route_by_id(db, route_id)
+    if route is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Route not found")
+    interest_point = InterestPoint(route_id=route_id, **payload.model_dump())
+    db.add(interest_point)
+    db.commit()
+    db.refresh(interest_point)
+    record_audit(db, "admin.interest_point_created", "interest_point", str(interest_point.id), actor_user_id=actor_user_id)
+    db.commit()
+    return interest_point
+
+
+def update_interest_point(db: Session, interest_point_id: int, payload: InterestPointUpdateRequest, actor_user_id: int) -> InterestPoint:
+    interest_point = db.get(InterestPoint, interest_point_id)
+    if interest_point is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Interest point not found")
+    for field, value in payload.model_dump(exclude_none=True).items():
+        setattr(interest_point, field, value)
+    record_audit(db, "admin.interest_point_updated", "interest_point", str(interest_point.id), actor_user_id=actor_user_id)
+    db.commit()
+    db.refresh(interest_point)
+    return interest_point
 
 
 def create_passport_type(db: Session, payload: PassportTypeCreateRequest, actor_user_id: int) -> PassportType:

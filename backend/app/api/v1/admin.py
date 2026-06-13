@@ -5,6 +5,7 @@ from app.db.session import get_db
 from app.models import Passport, PassportType, Route
 from app.repositories import order_repository, route_repository
 from app.schemas.admin import (
+    AdminInterestPointsResponse,
     AdminOrderDetail,
     AdminOrderUpdateRequest,
     AdminOrdersResponse,
@@ -15,6 +16,8 @@ from app.schemas.admin import (
     AdminSummary,
     AdminUserDetail,
     AdminUsersResponse,
+    InterestPointCreateRequest,
+    InterestPointUpdateRequest,
     ManualStampRequest,
     PassportTypeCreateRequest,
     PassportTypeUpdateRequest,
@@ -26,7 +29,7 @@ from app.schemas.admin import (
     StampPointUpdateRequest,
     UserUpdateRequest,
 )
-from app.schemas.common import PassportSummary, PassportTypeSummary, PrivateStampPoint, RouteDetail, UserSummary
+from app.schemas.common import PassportSummary, PassportTypeSummary, PrivateInterestPoint, PrivateStampPoint, RouteDetail, UserSummary
 from app.security.deps import get_current_admin
 from app.services import admin_service, passport_service
 from app.services.serializers import serialize_admin_order, serialize_admin_order_detail, serialize_passport_summary
@@ -87,9 +90,24 @@ def create_stamp_point(route_id: int, payload: StampPointCreateRequest, db: Sess
     return StampPointAdminResponse(stamp_point=stamp_point, qr_value=qr_value)
 
 
+@router.get("/routes/{route_id}/interest-points", response_model=AdminInterestPointsResponse)
+def route_interest_points(route_id: int, db: Session = Depends(get_db), admin=Depends(get_current_admin)):
+    return AdminInterestPointsResponse(interest_points=route_repository.list_route_interest_points(db, route_id))
+
+
+@router.post("/routes/{route_id}/interest-points", response_model=PrivateInterestPoint)
+def create_interest_point(route_id: int, payload: InterestPointCreateRequest, db: Session = Depends(get_db), admin=Depends(get_current_admin)):
+    return admin_service.create_interest_point(db, route_id, payload, admin.id)
+
+
 @router.patch("/stamp-points/{stamp_point_id}", response_model=PrivateStampPoint)
 def update_stamp_point(stamp_point_id: int, payload: StampPointUpdateRequest, db: Session = Depends(get_db), admin=Depends(get_current_admin)):
     return admin_service.update_stamp_point(db, stamp_point_id, payload, admin.id)
+
+
+@router.patch("/interest-points/{interest_point_id}", response_model=PrivateInterestPoint)
+def update_interest_point(interest_point_id: int, payload: InterestPointUpdateRequest, db: Session = Depends(get_db), admin=Depends(get_current_admin)):
+    return admin_service.update_interest_point(db, interest_point_id, payload, admin.id)
 
 
 @router.post("/stamp-points/{stamp_point_id}/regenerate-qr", response_model=StampPointAdminResponse)

@@ -3,16 +3,18 @@ import { Link, useParams } from "react-router-dom";
 
 import { api } from "../../api/client";
 import { MapPanel } from "../../components/common/MapPanel";
-import { Route, StampPoint } from "../../types/api";
+import { InterestPoint, Route, StampPoint } from "../../types/api";
 
 export function RouteDetailPage() {
   const { slug = "" } = useParams();
   const [route, setRoute] = useState<Route | null>(null);
   const [points, setPoints] = useState<StampPoint[]>([]);
+  const [interestPoints, setInterestPoints] = useState<InterestPoint[]>([]);
 
   useEffect(() => {
     void api.get<Route>(`/routes/${slug}`).then(setRoute);
     void api.get<StampPoint[]>(`/routes/${slug}/stamp-points/public`).then(setPoints);
+    void api.get<InterestPoint[]>(`/routes/${slug}/interest-points/public`).then(setInterestPoints);
   }, [slug]);
 
   if (!route) {
@@ -43,7 +45,7 @@ export function RouteDetailPage() {
           <p>{route.min_stamps_to_complete} puntos oficiales para completar el viaje.</p>
         </article>
       </div>
-      <MapPanel points={points} title="Puntos visibles en modo teaser" />
+      <MapPanel interestPoints={interestPoints} points={points} title="Puntos visibles en modo teaser" />
       <div className="hero-actions">
         <Link className="primary-button" to={`/catalogo?routeSlug=${route.slug}`}>
           Ver pasaportes
@@ -52,4 +54,3 @@ export function RouteDetailPage() {
     </section>
   );
 }
-

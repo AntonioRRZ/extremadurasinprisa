@@ -57,6 +57,29 @@ export type StampPoint = {
   is_public_preview: boolean;
 };
 
+export type InterestPoint = {
+  id: number;
+  name: string;
+  slug: string;
+  point_type: string;
+  summary: string;
+  description?: string;
+  address?: string;
+  city: string;
+  province: string;
+  lat: number;
+  lng: number;
+  website_url?: string | null;
+  contact_phone?: string | null;
+  schedule_notes?: string | null;
+  parking_notes?: string | null;
+  access_notes?: string | null;
+  pet_friendly?: boolean;
+  is_public_preview: boolean;
+  is_active?: boolean;
+  sort_order?: number;
+};
+
 export type Passport = {
   id: number;
   route_id: number;

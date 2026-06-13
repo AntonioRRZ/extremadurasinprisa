@@ -54,6 +54,7 @@ class Route(TimestampMixin, Base):
     min_stamps_to_complete: Mapped[int] = mapped_column(Integer, default=4)
 
     stamp_points: Mapped[list["StampPoint"]] = relationship(back_populates="route", cascade="all, delete-orphan")
+    interest_points: Mapped[list["InterestPoint"]] = relationship(back_populates="route", cascade="all, delete-orphan")
     passport_types: Mapped[list["PassportType"]] = relationship(back_populates="route", cascade="all, delete-orphan")
     order_items: Mapped[list["OrderItem"]] = relationship(back_populates="route")
     passports: Mapped[list["Passport"]] = relationship(back_populates="route")
@@ -83,6 +84,36 @@ class StampPoint(TimestampMixin, Base):
     stamps: Mapped[list["Stamp"]] = relationship(back_populates="stamp_point")
 
     __table_args__ = (UniqueConstraint("route_id", "slug", name="uq_stamp_points_route_slug"),)
+
+
+class InterestPoint(TimestampMixin, Base):
+    __tablename__ = "interest_points"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    route_id: Mapped[int] = mapped_column(ForeignKey("routes.id"), index=True)
+    name: Mapped[str] = mapped_column(String(255))
+    slug: Mapped[str] = mapped_column(String(120))
+    point_type: Mapped[str] = mapped_column(String(80))
+    summary: Mapped[str] = mapped_column(Text)
+    description: Mapped[str] = mapped_column(Text)
+    address: Mapped[str] = mapped_column(String(255))
+    city: Mapped[str] = mapped_column(String(120))
+    province: Mapped[str] = mapped_column(String(120))
+    lat: Mapped[Decimal] = mapped_column(Numeric(10, 6))
+    lng: Mapped[Decimal] = mapped_column(Numeric(10, 6))
+    website_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    contact_phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    schedule_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    parking_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    access_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    pet_friendly: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_public_preview: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+
+    route: Mapped["Route"] = relationship(back_populates="interest_points")
+
+    __table_args__ = (UniqueConstraint("route_id", "slug", name="uq_interest_points_route_slug"),)
 
 
 class PassportType(Base):

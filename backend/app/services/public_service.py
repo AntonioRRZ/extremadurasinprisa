@@ -25,3 +25,7 @@ def get_public_route_stamp_points(db: Session, slug: str):
     route = get_public_route(db, slug)
     return route_repository.list_public_stamp_points(db, route.id)
 
+
+def get_public_route_interest_points(db: Session, slug: str):
+    route = get_public_route(db, slug)
+    return route_repository.list_public_interest_points(db, route.id)

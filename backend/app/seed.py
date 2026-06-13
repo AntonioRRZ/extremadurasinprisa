@@ -1,7 +1,7 @@
 from datetime import UTC, date, datetime
 
 import app.db.session as session_module
-from app.models import Order, OrderItem, Passport, PassportType, Payment, Route, Stamp, StampPoint, User
+from app.models import InterestPoint, Order, OrderItem, Passport, PassportType, Payment, Route, Stamp, StampPoint, User
 from app.security.passwords import hash_password
 from app.services.utils import generate_activation_code, generate_serial, generate_stamp_secret, hash_value
 
@@ -97,6 +97,55 @@ def seed() -> None:
             )
         db.add_all(created_points)
         db.flush()
+
+        db.add_all(
+            [
+                InterestPoint(
+                    route_id=route.id,
+                    name="Area camper de Malpartida",
+                    slug="area-camper-malpartida",
+                    point_type="pernocta",
+                    summary="Parada comoda para reorganizar la ruta y dormir con calma cerca del patrimonio natural.",
+                    description="Area recomendada para descansar, revisar aguas y arrancar temprano hacia Monfrague.",
+                    address="Avenida de la Estacion, Malpartida de Plasencia",
+                    city="Malpartida de Plasencia",
+                    province="Caceres",
+                    lat=39.979810,
+                    lng=-6.047420,
+                    website_url="https://www.extremadurasinprisas.es/pernocta-malpartida",
+                    contact_phone="+34 927 000 100",
+                    schedule_notes="Acceso libre. Mejor llegada antes del anochecer.",
+                    parking_notes="Plazas amplias para furgoneta media.",
+                    access_notes="Entrada sencilla desde la EX-208.",
+                    pet_friendly=True,
+                    is_public_preview=True,
+                    is_active=True,
+                    sort_order=1,
+                ),
+                InterestPoint(
+                    route_id=route.id,
+                    name="Meson de la Plaza Chica",
+                    slug="meson-plaza-chica",
+                    point_type="gastronomia",
+                    summary="Parada gastronomica para enlazar producto local y casco historico en una sola visita.",
+                    description="Sugerencia editorial para comida lenta, producto local y paseo posterior por el centro.",
+                    address="Plaza Chica, Zafra",
+                    city="Zafra",
+                    province="Badajoz",
+                    lat=38.425731,
+                    lng=-6.416116,
+                    website_url="https://www.extremadurasinprisas.es/meson-plaza-chica",
+                    contact_phone="+34 924 000 200",
+                    schedule_notes="Servicio de comida y cena. Conviene reservar en fin de semana.",
+                    parking_notes="Aparcamiento recomendado en bolsas exteriores.",
+                    access_notes="Ultimo tramo peatonal por el centro historico.",
+                    pet_friendly=False,
+                    is_public_preview=True,
+                    is_active=True,
+                    sort_order=2,
+                ),
+            ]
+        )
 
         order = Order(
             buyer_user_id=user.id,
