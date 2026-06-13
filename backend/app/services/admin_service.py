@@ -1,14 +1,19 @@
 from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
+import json
+
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.models import InterestPoint, Order, Passport, PassportType, Route, Stamp, StampPoint, User
-from app.repositories import passport_repository, route_repository, user_repository
+from app.models import AuditLog, InterestPoint, Order, Passport, PassportType, Route, Stamp, StampPoint, User
+from app.repositories import passport_repository, route_repository, stamp_repository, user_repository
 from app.schemas.admin import (
     AdminActivePassportDetail,
     AdminActivePassportListItem,
+    AdminStampActor,
+    AdminStampEvent,
+    AdminStampsResponse,
     AdminUserDetail,
     AdminUserListItem,
     AdminUserPassportDetail,
@@ -91,6 +96,108 @@ def _serialize_admin_active_passport(db: Session, passport: Passport) -> AdminAc
 def list_admin_active_passports(db: Session) -> list[AdminActivePassportListItem]:
     passports = passport_repository.list_admin_active_passports(db)
     return [_serialize_admin_active_passport(db, passport) for passport in passports if passport.activated_by_user is not None]
+
+
+def _actor_summary(user: User) -> AdminStampActor:
+    return AdminStampActor(id=user.id, email=user.email, full_name=user.full_name)
+
+
+def _load_stamp_audit_map(db: Session, stamps: list[Stamp]) -> dict[tuple[int, int, str], AuditLog]:
+    passport_ids = {stamp.passport_id for stamp in stamps}
+    if not passport_ids:
+        return {}
+    logs = list(
+        db.scalars(
+            select(AuditLog)
+            .where(
+                AuditLog.entity_type == "passport",
+                AuditLog.entity_id.in_([str(passport_id) for passport_id in passport_ids]),
+                AuditLog.action.in_(["passport.stamped", "passport.manual_stamp"]),
+            )
+            .order_by(AuditLog.created_at.desc(), AuditLog.id.desc())
+        )
+    )
+    audit_map: dict[tuple[int, int, str], AuditLog] = {}
+    for log in logs:
+        try:
+            metadata = json.loads(log.metadata_json or "{}")
+        except json.JSONDecodeError:
+            metadata = {}
+        stamp_point_id = metadata.get("stamp_point_id")
+        if stamp_point_id is None:
+            continue
+        key = (int(log.entity_id), int(stamp_point_id), log.action)
+        audit_map.setdefault(key, log)
+    return audit_map
+
+
+def _serialize_admin_stamp_event(stamp: Stamp, audit_map: dict[tuple[int, int, str], AuditLog], actor_map: dict[int, User]) -> AdminStampEvent:
+    audit_action = "passport.manual_stamp" if stamp.scan_source == "admin_manual" else "passport.stamped"
+    audit_log = audit_map.get((stamp.passport_id, stamp.stamp_point_id, audit_action))
+    recorded_by_user = actor_map.get(audit_log.actor_user_id) if audit_log and audit_log.actor_user_id else None
+    passport_owner_name = stamp.passport.owner_display_name or (stamp.passport.activated_by_user.full_name if stamp.passport.activated_by_user else None)
+    return AdminStampEvent(
+        stamp_id=stamp.id,
+        stamped_at=stamp.stamped_at,
+        validation_status=stamp.validation_status,
+        scan_source=stamp.scan_source,
+        audit_action=audit_log.action if audit_log else None,
+        route_id=stamp.passport.route_id,
+        route_title=stamp.passport.route.title,
+        passport_id=stamp.passport_id,
+        passport_serial_number=stamp.passport.serial_number,
+        passport_owner_name=passport_owner_name,
+        passport_type_name=stamp.passport.passport_type.name,
+        stamp_point_id=stamp.stamp_point_id,
+        stamp_point_name=stamp.stamp_point.name,
+        stamp_point_city=stamp.stamp_point.city,
+        stamp_point_province=stamp.stamp_point.province,
+        traveler_user=_actor_summary(stamp.user),
+        recorded_by_user=_actor_summary(recorded_by_user) if recorded_by_user else None,
+    )
+
+
+def list_admin_stamp_events(
+    db: Session,
+    *,
+    scan_source: str | None = None,
+    user_id: int | None = None,
+    passport_id: int | None = None,
+    stamp_point_id: int | None = None,
+    q: str | None = None,
+) -> AdminStampsResponse:
+    stamps = stamp_repository.list_admin_stamps(
+        db,
+        scan_source=scan_source,
+        user_id=user_id,
+        passport_id=passport_id,
+        stamp_point_id=stamp_point_id,
+    )
+    if q:
+        normalized = q.strip().lower()
+        stamps = [
+            stamp
+            for stamp in stamps
+            if normalized in stamp.passport.serial_number.lower()
+            or normalized in stamp.passport.route.title.lower()
+            or normalized in stamp.stamp_point.name.lower()
+            or normalized in stamp.stamp_point.city.lower()
+            or normalized in stamp.user.full_name.lower()
+            or normalized in stamp.user.email.lower()
+            or normalized in (stamp.passport.owner_display_name or "").lower()
+        ]
+
+    audit_map = _load_stamp_audit_map(db, stamps)
+    actor_ids = {log.actor_user_id for log in audit_map.values() if log.actor_user_id is not None}
+    actor_users = list(db.scalars(select(User).where(User.id.in_(actor_ids)))) if actor_ids else []
+    actor_map = {user.id: user for user in actor_users}
+    items = [_serialize_admin_stamp_event(stamp, audit_map, actor_map) for stamp in stamps]
+    return AdminStampsResponse(
+        stamps=items,
+        total=len(items),
+        qr_scan_count=sum(1 for item in items if item.scan_source == "qr_scan"),
+        manual_count=sum(1 for item in items if item.scan_source == "admin_manual"),
+    )
 
 
 def get_admin_active_passport_detail(db: Session, passport_id: int) -> AdminActivePassportDetail:

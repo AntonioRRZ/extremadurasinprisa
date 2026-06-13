@@ -15,6 +15,7 @@ from app.schemas.admin import (
     AdminPassportTypesResponse,
     AdminRoutesResponse,
     AdminStampPointsResponse,
+    AdminStampsResponse,
     AdminSummary,
     AdminUserDetail,
     AdminUsersResponse,
@@ -42,6 +43,26 @@ router = APIRouter()
 @router.get("/dashboard/summary", response_model=AdminSummary)
 def dashboard_summary(db: Session = Depends(get_db), admin=Depends(get_current_admin)):
     return admin_service.dashboard_summary(db)
+
+
+@router.get("/stamps", response_model=AdminStampsResponse)
+def admin_stamps(
+    scan_source: str | None = None,
+    user_id: int | None = None,
+    passport_id: int | None = None,
+    stamp_point_id: int | None = None,
+    q: str | None = None,
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin),
+):
+    return admin_service.list_admin_stamp_events(
+        db,
+        scan_source=scan_source,
+        user_id=user_id,
+        passport_id=passport_id,
+        stamp_point_id=stamp_point_id,
+        q=q,
+    )
 
 
 @router.get("/users", response_model=AdminUsersResponse)

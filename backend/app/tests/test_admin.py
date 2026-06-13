@@ -7,6 +7,67 @@ def test_admin_permissions(client, user_token):
     assert response.status_code == 403
 
 
+def test_admin_stamps_module_lists_qr_and_manual_with_filters(client, admin_token, user_token):
+    activation = client.post(
+        "/api/v1/me/passports/activate",
+        headers=_headers(user_token),
+        json={"activation_code": "DEMO-ACT-001", "owner_display_name": "Propietaria"},
+    )
+    assert activation.status_code == 200
+    qr_passport_id = activation.json()["id"]
+
+    stamp_points = client.get("/api/v1/admin/routes/1/stamp-points", headers=_headers(admin_token))
+    assert stamp_points.status_code == 200
+    route_points = stamp_points.json()["stamp_points"]
+    qr_point_id = next(point["id"] for point in route_points if point["name"] == "Monfrague al amanecer")
+    manual_point_id = next(point["id"] for point in route_points if point["name"] == "Trujillo sosegado")
+
+    regenerate = client.post(
+        f"/api/v1/admin/stamp-points/{qr_point_id}/regenerate-qr",
+        headers=_headers(admin_token),
+    )
+    assert regenerate.status_code == 200
+    qr_value = regenerate.json()["qr_value"]
+
+    scan = client.post(
+        f"/api/v1/me/passports/{qr_passport_id}/scan",
+        headers=_headers(user_token),
+        json={"qr_code": qr_value},
+    )
+    assert scan.status_code == 200
+
+    active_passports = client.get("/api/v1/admin/active-passports", headers=_headers(admin_token))
+    assert active_passports.status_code == 200
+    manual_passport_id = active_passports.json()["passports"][0]["passport"]["id"]
+
+    manual_stamp = client.post(
+        f"/api/v1/admin/passports/{manual_passport_id}/manual-stamp",
+        headers=_headers(admin_token),
+        json={"stamp_point_id": manual_point_id},
+    )
+    assert manual_stamp.status_code == 200
+
+    all_events = client.get("/api/v1/admin/stamps", headers=_headers(admin_token))
+    assert all_events.status_code == 200
+    payload = all_events.json()
+    assert payload["total"] >= 3
+    assert payload["qr_scan_count"] >= 1
+    assert payload["manual_count"] >= 2
+
+    qr_events = client.get("/api/v1/admin/stamps?scan_source=qr_scan", headers=_headers(admin_token))
+    assert qr_events.status_code == 200
+    qr_event = qr_events.json()["stamps"][0]
+    assert qr_event["scan_source"] == "qr_scan"
+    assert qr_event["recorded_by_user"]["email"] == "user@example.com"
+
+    manual_events = client.get("/api/v1/admin/stamps?scan_source=admin_manual&q=trujillo", headers=_headers(admin_token))
+    assert manual_events.status_code == 200
+    manual_event = manual_events.json()["stamps"][0]
+    assert manual_event["scan_source"] == "admin_manual"
+    assert manual_event["recorded_by_user"]["email"] == "admin@example.com"
+    assert manual_event["stamp_point_name"] == "Trujillo sosegado"
+
+
 def test_admin_dashboard_summary_shape(client, admin_token):
     response = client.get("/api/v1/admin/dashboard/summary", headers=_headers(admin_token))
     assert response.status_code == 200

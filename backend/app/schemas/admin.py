@@ -13,6 +13,12 @@ class AdminSummary(BaseModel):
     stamps: int
 
 
+class AdminStampActor(BaseModel):
+    id: int
+    email: str
+    full_name: str
+
+
 class UserUpdateRequest(BaseModel):
     full_name: str | None = None
     phone: str | None = None
@@ -244,6 +250,33 @@ class AdminOrdersResponse(BaseModel):
 
 class AdminActivePassportsResponse(BaseModel):
     passports: list[AdminActivePassportListItem]
+
+
+class AdminStampEvent(BaseModel):
+    stamp_id: int
+    stamped_at: datetime
+    validation_status: str
+    scan_source: str
+    audit_action: str | None
+    route_id: int
+    route_title: str
+    passport_id: int
+    passport_serial_number: str
+    passport_owner_name: str | None
+    passport_type_name: str
+    stamp_point_id: int
+    stamp_point_name: str
+    stamp_point_city: str
+    stamp_point_province: str
+    traveler_user: AdminStampActor
+    recorded_by_user: AdminStampActor | None
+
+
+class AdminStampsResponse(BaseModel):
+    stamps: list[AdminStampEvent]
+    total: int
+    qr_scan_count: int
+    manual_count: int
 
 
 class AdminUserListItem(UserSummary):

@@ -201,6 +201,39 @@ export type AdminActivePassportDetail = {
   last_stamp_point: StampPoint | null;
 };
 
+export type AdminStampActor = {
+  id: number;
+  email: string;
+  full_name: string;
+};
+
+export type AdminStampEvent = {
+  stamp_id: number;
+  stamped_at: string;
+  validation_status: string;
+  scan_source: string;
+  audit_action: string | null;
+  route_id: number;
+  route_title: string;
+  passport_id: number;
+  passport_serial_number: string;
+  passport_owner_name: string | null;
+  passport_type_name: string;
+  stamp_point_id: number;
+  stamp_point_name: string;
+  stamp_point_city: string;
+  stamp_point_province: string;
+  traveler_user: AdminStampActor;
+  recorded_by_user: AdminStampActor | null;
+};
+
+export type AdminStampsResponse = {
+  stamps: AdminStampEvent[];
+  total: number;
+  qr_scan_count: number;
+  manual_count: number;
+};
+
 export type Payment = {
   id: number;
   order_id: number;
