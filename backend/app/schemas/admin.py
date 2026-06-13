@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from app.schemas.common import OrderSummary, PassportSummary, PassportTypeSummary, PaymentSummary, PrivateStampPoint, RouteDetail, UserSummary
+from app.schemas.common import OrderSummary, PassportSummary, PassportTypeSummary, PaymentSummary, PrivateStampPoint, RouteDetail, StampSummary, UserSummary
 
 
 class AdminSummary(BaseModel):
@@ -128,7 +128,7 @@ class ManualStampRequest(BaseModel):
 
 
 class AdminUsersResponse(BaseModel):
-    users: list[UserSummary]
+    users: list["AdminUserListItem"]
 
 
 class AdminRoutesResponse(BaseModel):
@@ -175,3 +175,26 @@ class AdminOrderUpdateRequest(BaseModel):
 
 class AdminOrdersResponse(BaseModel):
     orders: list[AdminOrderSummary]
+
+
+class AdminUserListItem(UserSummary):
+    passport_status: str
+    active_passports_count: int
+    last_route_title: str | None
+    last_stamp_at: datetime | None
+
+
+class AdminUserPassportDetail(BaseModel):
+    passport: PassportSummary
+    route: RouteDetail
+    stamp_points: list[PrivateStampPoint]
+    stamps: list[StampSummary]
+
+
+class AdminUserDetail(BaseModel):
+    user: UserSummary
+    passport_status: str
+    active_passports_count: int
+    total_stamps: int
+    orders: list[OrderSummary]
+    passport_details: list[AdminUserPassportDetail]

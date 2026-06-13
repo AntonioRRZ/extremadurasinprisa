@@ -138,6 +138,29 @@ export type AdminOrderDetail = AdminOrder & {
   passports: AdminOrderPassport[];
 };
 
+export type AdminUserListItem = User & {
+  passport_status: string;
+  active_passports_count: number;
+  last_route_title: string | null;
+  last_stamp_at: string | null;
+};
+
+export type AdminUserPassportDetail = {
+  passport: Passport;
+  route: Route;
+  stamp_points: StampPoint[];
+  stamps: Stamp[];
+};
+
+export type AdminUserDetail = {
+  user: User;
+  passport_status: string;
+  active_passports_count: number;
+  total_stamps: number;
+  orders: Order[];
+  passport_details: AdminUserPassportDetail[];
+};
+
 export type Payment = {
   id: number;
   order_id: number;

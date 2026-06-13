@@ -7,6 +7,9 @@ from sqlalchemy.orm import Session
 from app.models import Order, Passport, PassportType, Route, Stamp, StampPoint, User
 from app.repositories import route_repository, user_repository
 from app.schemas.admin import (
+    AdminUserDetail,
+    AdminUserListItem,
+    AdminUserPassportDetail,
     AdminOrderUpdateRequest,
     PassportTypeCreateRequest,
     PassportTypeUpdateRequest,
@@ -17,11 +20,87 @@ from app.schemas.admin import (
     StampPointUpdateRequest,
     UserUpdateRequest,
 )
+from app.schemas.common import PrivateStampPoint, RouteDetail, UserSummary
 from app.services.audit import record_audit
+from app.services.serializers import serialize_order, serialize_passport_summary, serialize_stamp
 from app.services.utils import build_stamp_qr_payload, generate_stamp_secret, hash_value
 
 
 FULFILLMENT_STATUSES = {"received", "preparing", "shipped", "delivered", "cancelled"}
+
+
+def _active_passports(passports: list[Passport]) -> list[Passport]:
+    return [passport for passport in passports if passport.operational_status in {"active", "completed"}]
+
+
+def _passport_status(passports: list[Passport]) -> str:
+    return "active" if _active_passports(passports) else "inactive"
+
+
+def _valid_stamps(passports: list[Passport]) -> list[Stamp]:
+    stamps: list[Stamp] = []
+    for passport in passports:
+        stamps.extend(stamp for stamp in passport.stamps if stamp.validation_status == "valid")
+    return stamps
+
+
+def _passport_activity_at(passport: Passport) -> datetime | None:
+    valid_stamps = [stamp.stamped_at for stamp in passport.stamps if stamp.validation_status == "valid"]
+    if valid_stamps:
+        return max(valid_stamps)
+    return passport.activated_at or passport.created_at
+
+
+def _serialize_admin_user_list_item(user: User) -> AdminUserListItem:
+    passports = list(user.activated_passports)
+    active_passports = _active_passports(passports)
+    last_stamp_at = max((stamp.stamped_at for stamp in _valid_stamps(passports)), default=None)
+    latest_passport = max(passports, key=lambda passport: _passport_activity_at(passport) or passport.created_at, default=None)
+    return AdminUserListItem(
+        **UserSummary.model_validate(user).model_dump(),
+        passport_status=_passport_status(passports),
+        active_passports_count=len(active_passports),
+        last_route_title=latest_passport.route.title if latest_passport else None,
+        last_stamp_at=last_stamp_at,
+    )
+
+
+def list_admin_users(db: Session) -> list[AdminUserListItem]:
+    return [_serialize_admin_user_list_item(user) for user in user_repository.list_admin_users(db)]
+
+
+def get_admin_user_detail(db: Session, user_id: int) -> AdminUserDetail:
+    user = user_repository.get_admin_user_detail(db, user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    passports = sorted(
+        user.activated_passports,
+        key=lambda passport: passport.activated_at or passport.created_at,
+        reverse=True,
+    )
+    active_passports = _active_passports(passports)
+    valid_stamps = _valid_stamps(passports)
+    orders = sorted(user.orders, key=lambda order: order.created_at, reverse=True)
+
+    passport_details = [
+        AdminUserPassportDetail(
+            passport=serialize_passport_summary(db, passport),
+            route=RouteDetail.model_validate(passport.route),
+            stamp_points=[PrivateStampPoint.model_validate(point) for point in sorted(passport.route.stamp_points, key=lambda point: point.id)],
+            stamps=[serialize_stamp(stamp) for stamp in sorted(passport.stamps, key=lambda item: item.stamped_at)],
+        )
+        for passport in passports
+    ]
+
+    return AdminUserDetail(
+        user=UserSummary.model_validate(user),
+        passport_status=_passport_status(passports),
+        active_passports_count=len(active_passports),
+        total_stamps=len(valid_stamps),
+        orders=[serialize_order(order) for order in orders],
+        passport_details=passport_details,
+    )
 
 
 def dashboard_summary(db: Session) -> dict:

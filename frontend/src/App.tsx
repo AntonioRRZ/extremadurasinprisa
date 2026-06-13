@@ -12,6 +12,7 @@ import { AdminPassportsPage } from "./pages/admin/AdminPassportsPage";
 import { AdminRouteEditorPage } from "./pages/admin/AdminRouteEditorPage";
 import { AdminRoutesPage } from "./pages/admin/AdminRoutesPage";
 import { AdminStampsPage } from "./pages/admin/AdminStampsPage";
+import { AdminUserDetailPage } from "./pages/admin/AdminUserDetailPage";
 import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
 import { ActivationRegisterPage } from "./pages/public/ActivationRegisterPage";
 import { CheckoutPage } from "./pages/public/CheckoutPage";
@@ -54,6 +55,7 @@ export default function App() {
           <Route element={<AdminRoute />}>
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/usuarios" element={<AdminUsersPage />} />
+            <Route path="/admin/usuarios/:userId" element={<AdminUserDetailPage />} />
             <Route path="/admin/rutas" element={<AdminRoutesPage />} />
             <Route path="/admin/rutas/:routeId" element={<AdminRouteEditorPage />} />
             <Route path="/admin/tipos" element={<AdminPassportTypesPage />} />

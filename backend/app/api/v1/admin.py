@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.models import Passport, PassportType, Route, StampPoint
-from app.repositories import order_repository, route_repository, user_repository
+from app.models import Passport, PassportType, Route
+from app.repositories import order_repository, route_repository
 from app.schemas.admin import (
     AdminOrderDetail,
     AdminOrderUpdateRequest,
@@ -13,6 +13,7 @@ from app.schemas.admin import (
     AdminRoutesResponse,
     AdminStampPointsResponse,
     AdminSummary,
+    AdminUserDetail,
     AdminUsersResponse,
     ManualStampRequest,
     PassportTypeCreateRequest,
@@ -40,7 +41,12 @@ def dashboard_summary(db: Session = Depends(get_db), admin=Depends(get_current_a
 
 @router.get("/users", response_model=AdminUsersResponse)
 def admin_users(db: Session = Depends(get_db), admin=Depends(get_current_admin)):
-    return AdminUsersResponse(users=user_repository.list_users(db))
+    return AdminUsersResponse(users=admin_service.list_admin_users(db))
+
+
+@router.get("/users/{user_id}", response_model=AdminUserDetail)
+def admin_user_detail(user_id: int, db: Session = Depends(get_db), admin=Depends(get_current_admin)):
+    return admin_service.get_admin_user_detail(db, user_id)
 
 
 @router.patch("/users/{user_id}", response_model=UserSummary)

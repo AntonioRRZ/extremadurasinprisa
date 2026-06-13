@@ -15,6 +15,38 @@ def test_admin_dashboard_summary_shape(client, admin_token):
     assert data["orders"] >= 1
 
 
+def test_admin_users_list_is_enriched(client, admin_token):
+    response = client.get("/api/v1/admin/users", headers=_headers(admin_token))
+    assert response.status_code == 200
+    users = response.json()["users"]
+    assert users
+
+    demo_user = next(user for user in users if user["email"] == "user@example.com")
+    assert demo_user["passport_status"] == "active"
+    assert demo_user["active_passports_count"] == 1
+    assert demo_user["last_route_title"] == "Dehesas y ciudades lentas"
+    assert demo_user["last_stamp_at"] is not None
+
+
+def test_admin_user_detail_includes_passports_stamps_and_orders(client, admin_token):
+    users_response = client.get("/api/v1/admin/users", headers=_headers(admin_token))
+    assert users_response.status_code == 200
+    user_id = next(user["id"] for user in users_response.json()["users"] if user["email"] == "user@example.com")
+
+    detail_response = client.get(f"/api/v1/admin/users/{user_id}", headers=_headers(admin_token))
+    assert detail_response.status_code == 200
+    detail = detail_response.json()
+
+    assert detail["user"]["email"] == "user@example.com"
+    assert detail["passport_status"] == "active"
+    assert detail["active_passports_count"] == 1
+    assert detail["total_stamps"] == 1
+    assert len(detail["orders"]) == 1
+    assert len(detail["passport_details"]) == 1
+    assert len(detail["passport_details"][0]["stamp_points"]) >= 1
+    assert len(detail["passport_details"][0]["stamps"]) == 1
+
+
 def test_admin_orders_include_fulfillment_fields(client, admin_token):
     response = client.get("/api/v1/admin/orders", headers=_headers(admin_token))
     assert response.status_code == 200
