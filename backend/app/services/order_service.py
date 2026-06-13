@@ -38,6 +38,7 @@ def create_order(db: Session, payload: OrderCreateRequest, buyer_user_id: int | 
         buyer_name=payload.buyer_name,
         buyer_phone=payload.buyer_phone,
         status="pending",
+        fulfillment_status="received",
         total_cents=total_cents,
         items=items,
     )
@@ -106,6 +107,7 @@ def confirm_mock_payment(db: Session, payment_id: int, outcome: str) -> tuple[Pa
         payment.status = "cancelled"
         payment.raw_response_json = '{"provider":"mock","outcome":"cancelled"}'
         order.status = "cancelled"
+        order.fulfillment_status = "cancelled"
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported outcome")
 
@@ -115,4 +117,3 @@ def confirm_mock_payment(db: Session, payment_id: int, outcome: str) -> tuple[Pa
     if not created_passports:
         created_passports = list(order.passports)
     return payment, order, created_passports
-

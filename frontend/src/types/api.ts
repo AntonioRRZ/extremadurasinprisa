@@ -108,10 +108,18 @@ export type Order = {
   buyer_name: string;
   buyer_phone: string | null;
   status: string;
+  fulfillment_status: string;
+  tracking_code: string | null;
+  shipped_at: string | null;
+  delivered_at: string | null;
   total_cents: number;
   currency: string;
   created_at: string;
   items: OrderItem[];
+};
+
+export type AdminOrder = Order & {
+  admin_notes: string | null;
 };
 
 export type Payment = {

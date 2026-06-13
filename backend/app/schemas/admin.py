@@ -145,5 +145,9 @@ class AdminPassportsResponse(BaseModel):
     passports: list[PassportSummary]
 
 
+class AdminOrderSummary(OrderSummary):
+    admin_notes: str | None
+
+
 class AdminOrdersResponse(BaseModel):
-    orders: list[OrderSummary]
+    orders: list[AdminOrderSummary]

@@ -115,6 +115,11 @@ class Order(TimestampMixin, Base):
     buyer_name: Mapped[str] = mapped_column(String(255))
     buyer_phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="pending")
+    fulfillment_status: Mapped[str] = mapped_column(String(20), default="received")
+    tracking_code: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    shipped_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    delivered_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    admin_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     total_cents: Mapped[int] = mapped_column(Integer)
     currency: Mapped[str] = mapped_column(String(10), default="EUR")
 

@@ -24,9 +24,16 @@ def test_mock_purchase_activation_and_stamp_flow(client, user_token, admin_token
     confirm = client.post("/api/v1/payments/mock/confirm", json={"payment_id": payment_id, "outcome": "success"})
     assert confirm.status_code == 200
     assert confirm.json()["order"]["status"] == "paid"
+    assert confirm.json()["order"]["fulfillment_status"] == "received"
 
     passports_before = client.get("/api/v1/me/passports", headers=_headers(user_token))
     assert passports_before.status_code == 200
+
+    my_orders = client.get("/api/v1/me/orders", headers=_headers(user_token))
+    assert my_orders.status_code == 200
+    fulfillment_statuses = {order["fulfillment_status"] for order in my_orders.json()}
+    assert "received" in fulfillment_statuses
+    assert "delivered" in fulfillment_statuses
 
     activation = client.post(
         "/api/v1/me/passports/activate",

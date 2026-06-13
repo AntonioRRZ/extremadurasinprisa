@@ -15,6 +15,15 @@ def test_admin_dashboard_summary_shape(client, admin_token):
     assert data["orders"] >= 1
 
 
+def test_admin_orders_include_fulfillment_fields(client, admin_token):
+    response = client.get("/api/v1/admin/orders", headers=_headers(admin_token))
+    assert response.status_code == 200
+    order = response.json()["orders"][0]
+    assert "fulfillment_status" in order
+    assert "tracking_code" in order
+    assert "admin_notes" in order
+
+
 def test_admin_creates_route_and_stamp_point(client, admin_token):
     route_payload = {
         "slug": "ruta-nueva",

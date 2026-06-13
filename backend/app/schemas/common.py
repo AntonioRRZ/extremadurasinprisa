@@ -129,6 +129,10 @@ class OrderSummary(BaseModel):
     buyer_name: str
     buyer_phone: str | None
     status: str
+    fulfillment_status: str
+    tracking_code: str | None
+    shipped_at: datetime | None
+    delivered_at: datetime | None
     total_cents: int
     currency: str
     created_at: datetime

@@ -104,6 +104,11 @@ def seed() -> None:
             buyer_name=user.full_name,
             buyer_phone=user.phone,
             status="paid",
+            fulfillment_status="delivered",
+            tracking_code="ESP-DEMO-001",
+            shipped_at=datetime.now(UTC).replace(tzinfo=None),
+            delivered_at=datetime.now(UTC).replace(tzinfo=None),
+            admin_notes="Pedido demo entregado correctamente.",
             total_cents=3085,
             currency="EUR",
         )

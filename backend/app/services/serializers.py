@@ -1,5 +1,6 @@
 from app.core.config import settings
 from app.models import Order, Passport, Payment, Stamp
+from app.schemas.admin import AdminOrderSummary
 from app.schemas.common import OrderItemSummary, OrderSummary, PassportSummary, PaymentSummary, StampSummary
 from app.services.passport_service import passport_to_summary
 
@@ -24,10 +25,22 @@ def serialize_order(order: Order) -> OrderSummary:
         buyer_name=order.buyer_name,
         buyer_phone=order.buyer_phone,
         status=order.status,
+        fulfillment_status=order.fulfillment_status,
+        tracking_code=order.tracking_code,
+        shipped_at=order.shipped_at,
+        delivered_at=order.delivered_at,
         total_cents=order.total_cents,
         currency=order.currency,
         created_at=order.created_at,
         items=items,
+    )
+
+
+def serialize_admin_order(order: Order) -> AdminOrderSummary:
+    summary = serialize_order(order)
+    return AdminOrderSummary(
+        **summary.model_dump(),
+        admin_notes=order.admin_notes,
     )
 
 
@@ -60,4 +73,3 @@ def serialize_stamp(stamp: Stamp) -> StampSummary:
 
 def common_passport_qr_url() -> str:
     return settings.common_passport_qr_url
-

@@ -26,7 +26,7 @@ from app.schemas.admin import (
 from app.schemas.common import PassportSummary, PassportTypeSummary, PrivateStampPoint, RouteDetail, UserSummary
 from app.security.deps import get_current_admin
 from app.services import admin_service, passport_service
-from app.services.serializers import serialize_order, serialize_passport_summary
+from app.services.serializers import serialize_admin_order, serialize_passport_summary
 
 router = APIRouter()
 
@@ -125,4 +125,4 @@ def manual_stamp(passport_id: int, payload: ManualStampRequest, db: Session = De
 
 @router.get("/orders", response_model=AdminOrdersResponse)
 def admin_orders(db: Session = Depends(get_db), admin=Depends(get_current_admin)):
-    return AdminOrdersResponse(orders=[serialize_order(order) for order in order_repository.list_orders(db)])
+    return AdminOrdersResponse(orders=[serialize_admin_order(order) for order in order_repository.list_orders(db)])
