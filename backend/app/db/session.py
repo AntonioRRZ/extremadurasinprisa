@@ -1,10 +1,10 @@
 from collections.abc import Generator
 
 from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import settings
-from app.db.base import Base
 
 
 connect_args = {"check_same_thread": False} if settings.database_url.startswith("sqlite") else {}
@@ -21,7 +21,11 @@ def get_db() -> Generator[Session, None, None]:
 
 
 def init_db() -> None:
-    from app.models import entities  # noqa: F401
-
-    Base.metadata.create_all(bind=engine)
-
+    try:
+        with engine.connect() as connection:
+            connection.exec_driver_sql("SELECT 1")
+    except OperationalError as exc:
+        raise RuntimeError(
+            "Database is not ready. Run Alembic migrations first with "
+            "'alembic -c .\\backend\\alembic.ini upgrade head'."
+        ) from exc

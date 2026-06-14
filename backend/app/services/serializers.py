@@ -50,6 +50,7 @@ def serialize_admin_order_detail(order: Order) -> AdminOrderDetail:
         AdminOrderPassportSummary(
             id=passport.id,
             serial_number=passport.serial_number,
+            activation_code=passport.activation_code,
             passport_type_name=passport.passport_type.name,
             operational_status=passport.operational_status,
             activated_at=passport.activated_at,
@@ -63,6 +64,7 @@ def serialize_admin_order_detail(order: Order) -> AdminOrderDetail:
         **summary.model_dump(),
         payments=[serialize_payment(payment) for payment in order.payments],
         passports=passports,
+        common_passport_qr_url=common_passport_qr_url(),
     )
 
 
@@ -94,4 +96,4 @@ def serialize_stamp(stamp: Stamp) -> StampSummary:
 
 
 def common_passport_qr_url() -> str:
-    return settings.common_passport_qr_url
+    return settings.frontend_url

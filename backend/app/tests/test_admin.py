@@ -127,6 +127,9 @@ def test_admin_order_detail_and_update(client, admin_token):
     detail = detail_response.json()
     assert "payments" in detail
     assert "passports" in detail
+    assert "common_passport_qr_url" in detail
+    assert detail["common_passport_qr_url"] == "http://localhost:5173"
+    assert detail["passports"][0]["activation_code"]
 
     update_response = client.patch(
         f"/api/v1/admin/orders/{order_id}",

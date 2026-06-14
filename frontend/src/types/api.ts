@@ -148,6 +148,7 @@ export type AdminOrder = Order & {
 export type AdminOrderPassport = {
   id: number;
   serial_number: string;
+  activation_code: string;
   passport_type_name: string;
   operational_status: string;
   activated_at: string | null;
@@ -159,6 +160,7 @@ export type AdminOrderPassport = {
 export type AdminOrderDetail = AdminOrder & {
   payments: Payment[];
   passports: AdminOrderPassport[];
+  common_passport_qr_url: string;
 };
 
 export type AdminUserListItem = User & {

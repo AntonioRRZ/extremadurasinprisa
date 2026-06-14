@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useParams } from "react-router-dom";
+import QRCode from "qrcode";
 
 import { api, formatDate, formatPrice } from "../../api/client";
 import { StatusBadge } from "../../components/common/StatusBadge";
@@ -21,7 +22,13 @@ export function AdminOrderDetailPage() {
   const [detail, setDetail] = useState<AdminOrderDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<OrderUpdateForm>();
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = useForm<OrderUpdateForm>();
 
   const loadOrder = async () => {
     if (!accessToken) {
@@ -39,6 +46,21 @@ export function AdminOrderDetailPage() {
   useEffect(() => {
     void loadOrder();
   }, [accessToken, orderId]);
+
+  useEffect(() => {
+    if (!detail?.common_passport_qr_url) {
+      setQrDataUrl(null);
+      return;
+    }
+    void QRCode.toDataURL(detail.common_passport_qr_url, {
+      width: 240,
+      margin: 1,
+      color: {
+        dark: "#1f3629",
+        light: "#f8f5ee",
+      },
+    }).then(setQrDataUrl);
+  }, [detail?.common_passport_qr_url]);
 
   const onSubmit = handleSubmit(async (values) => {
     if (!accessToken) {
@@ -69,7 +91,7 @@ export function AdminOrderDetailPage() {
       <div className="section-heading">
         <span className="eyebrow">Admin</span>
         <h1>Pedido #{detail.id}</h1>
-        <p>{detail.buyer_name} · {detail.buyer_email}</p>
+        <p>{detail.buyer_name} - {detail.buyer_email}</p>
       </div>
 
       <div className="route-detail-grid">
@@ -90,11 +112,31 @@ export function AdminOrderDetailPage() {
           <h3>Pasaportes</h3>
           <p>{detail.passports.length} generados</p>
           <p>{detail.passports.filter((passport) => passport.activated_by_user_id).length} activados</p>
+          <p>QR comun para todos los pasaportes del pedido</p>
           <Link className="ghost-button" to="/admin/pedidos">
             Volver a pedidos
           </Link>
         </article>
       </div>
+
+      <section className="editorial-section">
+        <div className="section-heading">
+          <span className="eyebrow">Entrega fisica</span>
+          <h2>QR comun de acceso</h2>
+          <p>Este QR es igual para todos los pasaportes del pedido y dirige a la home para iniciar el alta con el numero unico del pasaporte.</p>
+        </div>
+        <div className="route-highlight admin-order-qr-layout">
+          <div className="route-copy">
+            <span className="eyebrow">Acceso comun</span>
+            <h2>Home de activacion</h2>
+            <p>El usuario escanea este QR, entra en la web y completa el alta usando el numero unico impreso en su pasaporte fisico.</p>
+            <p className="mono-text">{detail.common_passport_qr_url}</p>
+          </div>
+          <div className="admin-order-qr-frame">
+            {qrDataUrl ? <img alt="QR comun del pasaporte" className="admin-order-qr-image" src={qrDataUrl} /> : <p>Generando QR...</p>}
+          </div>
+        </div>
+      </section>
 
       <form className="admin-form" onSubmit={onSubmit}>
         <h2>Actualizar logistica</h2>
@@ -145,18 +187,41 @@ export function AdminOrderDetailPage() {
           <span className="eyebrow">Activacion</span>
           <h2>Pasaportes generados</h2>
         </div>
-        <div className="stamp-list">
+        <div className="passport-grid">
           {detail.passports.map((passport) => (
-            <article className="story-card" key={passport.id}>
-              <h3>{passport.serial_number}</h3>
-              <p>{passport.passport_type_name}</p>
-              <StatusBadge value={passport.operational_status} />
-              <p>
-                {passport.activated_by_user_name
-                  ? `Activado por ${passport.activated_by_user_name} (${passport.activated_by_user_email})`
-                  : "Aun no activado"}
-              </p>
-              <p>Fecha de activacion: {formatDate(passport.activated_at)}</p>
+            <article className="passport-issued-card" key={passport.id}>
+              <div className="passport-preview passport-issued-preview">
+                <span className="passport-chip">Pasaporte fisico</span>
+                <h2>{passport.passport_type_name}</h2>
+                <p>{detail.items[0]?.route_title ?? "Ruta editorial"}</p>
+                <div className="inline-badges">
+                  <StatusBadge value={passport.operational_status} />
+                </div>
+                <div className="passport-issued-meta">
+                  <div>
+                    <span>Serie</span>
+                    <strong>{passport.serial_number}</strong>
+                  </div>
+                  <div>
+                    <span>Numero unico</span>
+                    <strong>{passport.activation_code}</strong>
+                  </div>
+                </div>
+                <ul className="hero-stats">
+                  <li>QR comun para acceso a la web</li>
+                  <li>Alta con numero unico del pasaporte</li>
+                  <li>Activacion individual por titular</li>
+                </ul>
+              </div>
+              <div className="passport-issued-copy">
+                <p className="passport-code">Codigo unico: {passport.activation_code}</p>
+                <p>
+                  {passport.activated_by_user_name
+                    ? `Activado por ${passport.activated_by_user_name} (${passport.activated_by_user_email})`
+                    : "Aun no activado"}
+                </p>
+                <p>Fecha de activacion: {formatDate(passport.activated_at)}</p>
+              </div>
             </article>
           ))}
         </div>

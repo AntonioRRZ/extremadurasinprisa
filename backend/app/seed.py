@@ -4,13 +4,22 @@ import app.db.session as session_module
 from app.models import InterestPoint, Order, OrderItem, Passport, PassportType, Payment, Route, Stamp, StampPoint, User
 from app.security.passwords import hash_password
 from app.services.utils import generate_activation_code, generate_serial, generate_stamp_secret, hash_value
+from sqlalchemy.exc import OperationalError
 
 
 def seed() -> None:
     session_module.init_db()
     db = session_module.SessionLocal()
     try:
-        if db.query(User).count() > 0:
+        try:
+            existing_users = db.query(User).count()
+        except OperationalError as exc:
+            raise RuntimeError(
+                "Database schema is not ready for seed. Run "
+                "'alembic -c .\\backend\\alembic.ini upgrade head' first."
+            ) from exc
+
+        if existing_users > 0:
             return
 
         admin = User(

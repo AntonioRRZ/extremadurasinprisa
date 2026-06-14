@@ -225,6 +225,7 @@ class AdminOrderSummary(OrderSummary):
 class AdminOrderPassportSummary(BaseModel):
     id: int
     serial_number: str
+    activation_code: str
     passport_type_name: str
     operational_status: str
     activated_at: datetime | None
@@ -236,6 +237,7 @@ class AdminOrderPassportSummary(BaseModel):
 class AdminOrderDetail(AdminOrderSummary):
     payments: list[PaymentSummary]
     passports: list[AdminOrderPassportSummary]
+    common_passport_qr_url: str
 
 
 class AdminOrderUpdateRequest(BaseModel):

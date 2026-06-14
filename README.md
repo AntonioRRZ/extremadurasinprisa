@@ -87,18 +87,29 @@ Copy-Item .env.example .env
 
 Variables principales:
 
-- `DATABASE_URL=sqlite:///./extremadura_sin_prisas.db`
+- `DATABASE_URL=sqlite:///C:/dev/extremadurasinprisa/extremadura_sin_prisas.db`
 - `SECRET_KEY=change-me-in-production-with-32-bytes`
 - `FRONTEND_URL=http://localhost:5173`
 - `COMMON_PASSPORT_QR_URL=http://localhost:5173/activar`
 - `VITE_API_URL=http://localhost:8000/api/v1`
 
+Nota:
+
+- si no defines `DATABASE_URL`, el backend usa por defecto `C:/dev/extremadurasinprisa/extremadura_sin_prisas.db`.
+- backend y Alembic ya no dependen del directorio actual para resolver la SQLite.
+
 ### 4. Aplicar migraciones
 
 ```powershell
-cd backend
-alembic upgrade head
-cd ..
+alembic -c .\backend\alembic.ini upgrade head
+```
+
+Si ya existe una base creada fuera de Alembic y ves errores como `table users already exists` o `table orders has no column named fulfillment_status`, elimina primero la SQLite local y vuelve a migrar:
+
+```powershell
+Remove-Item .\extremadura_sin_prisas.db -ErrorAction SilentlyContinue
+Remove-Item .\backend\extremadura_sin_prisas.db -ErrorAction SilentlyContinue
+alembic -c .\backend\alembic.ini upgrade head
 ```
 
 Migraciones actuales:

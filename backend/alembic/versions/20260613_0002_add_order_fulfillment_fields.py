@@ -22,7 +22,8 @@ def upgrade() -> None:
     op.add_column("orders", sa.Column("delivered_at", sa.DateTime(), nullable=True))
     op.add_column("orders", sa.Column("admin_notes", sa.Text(), nullable=True))
     op.execute("UPDATE orders SET fulfillment_status = 'received' WHERE fulfillment_status IS NULL")
-    op.alter_column("orders", "fulfillment_status", existing_type=sa.String(length=20), nullable=False)
+    with op.batch_alter_table("orders") as batch_op:
+        batch_op.alter_column("fulfillment_status", existing_type=sa.String(length=20), nullable=False)
 
 
 def downgrade() -> None:
