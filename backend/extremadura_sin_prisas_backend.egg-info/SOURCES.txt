@@ -23,6 +23,7 @@ pyproject.toml
 ./app/repositories/order_repository.py
 ./app/repositories/passport_repository.py
 ./app/repositories/route_repository.py
+./app/repositories/stamp_repository.py
 ./app/repositories/user_repository.py
 ./app/schemas/__init__.py
 ./app/schemas/admin.py
@@ -47,6 +48,7 @@ pyproject.toml
 ./app/tests/conftest.py
 ./app/tests/test_admin.py
 ./app/tests/test_auth.py
+./app/tests/test_config.py
 ./app/tests/test_flow.py
 ./app/tests/test_health.py
 app/__init__.py
@@ -73,6 +75,7 @@ app/repositories/__init__.py
 app/repositories/order_repository.py
 app/repositories/passport_repository.py
 app/repositories/route_repository.py
+app/repositories/stamp_repository.py
 app/repositories/user_repository.py
 app/schemas/__init__.py
 app/schemas/admin.py
@@ -97,6 +100,7 @@ app/tests/__init__.py
 app/tests/conftest.py
 app/tests/test_admin.py
 app/tests/test_auth.py
+app/tests/test_config.py
 app/tests/test_flow.py
 app/tests/test_health.py
 extremadura_sin_prisas_backend.egg-info/PKG-INFO
