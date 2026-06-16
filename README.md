@@ -97,6 +97,7 @@ Nota:
 
 - si no defines `DATABASE_URL`, el backend usa por defecto `C:/dev/extremadurasinprisa/extremadura_sin_prisas.db`.
 - backend y Alembic ya no dependen del directorio actual para resolver la SQLite.
+- `COMMON_PASSPORT_QR_URL` se normaliza a la home publica del frontend; si introduces `/activar` u otra ruta, el backend la reduce al dominio base.
 
 ### 4. Aplicar migraciones
 
@@ -402,7 +403,7 @@ CORS_ORIGINS=["https://www.tudominio.es","https://tudominio.es"]
 
 Notas:
 
-- `COMMON_PASSPORT_QR_URL` se mantiene como variable operativa, pero el QR comun mostrado al usuario debe apuntar a la home publica del sitio.
+- `COMMON_PASSPORT_QR_URL` se normaliza en backend a la home publica del sitio.
 - si prefieres separar frontend sin `www`, ajusta `FRONTEND_URL`, `COMMON_PASSPORT_QR_URL` y `CORS_ORIGINS` al dominio real elegido.
 
 ### 4. DNS en DonDominio

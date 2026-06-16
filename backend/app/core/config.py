@@ -1,13 +1,23 @@
 from functools import lru_cache
 from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit
 
 from pydantic import Field
 from pydantic import field_validator
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_DATABASE_PATH = (PROJECT_ROOT / "extremadura_sin_prisas.db").as_posix()
+
+
+def normalize_public_home_url(value: str) -> str:
+    normalized = value.strip().rstrip("/")
+    parsed = urlsplit(normalized)
+    if parsed.scheme and parsed.netloc:
+        return urlunsplit((parsed.scheme, parsed.netloc, "", "", ""))
+    return normalized
 
 
 class Settings(BaseSettings):
@@ -21,7 +31,7 @@ class Settings(BaseSettings):
     refresh_token_expire_minutes: int = 60 * 24 * 7
     cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
     frontend_url: str = "http://localhost:5173"
-    common_passport_qr_url: str = "http://localhost:5173/activar"
+    common_passport_qr_url: str | None = None
     stripe_secret_key: str = ""
     stripe_public_key: str = ""
     stripe_webhook_secret: str = ""
@@ -41,6 +51,18 @@ class Settings(BaseSettings):
             if sqlite_path.startswith("./"):
                 return f"{prefix}{(PROJECT_ROOT / sqlite_path[2:]).as_posix()}"
         return value
+
+    @field_validator("frontend_url", "common_passport_qr_url", mode="before")
+    @classmethod
+    def normalize_public_url_fields(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return normalize_public_home_url(value)
+
+    @model_validator(mode="after")
+    def default_common_passport_qr_url(self) -> "Settings":
+        self.common_passport_qr_url = self.common_passport_qr_url or self.frontend_url
+        return self
 
 
 @lru_cache

@@ -96,4 +96,4 @@ def serialize_stamp(stamp: Stamp) -> StampSummary:
 
 
 def common_passport_qr_url() -> str:
-    return settings.frontend_url
+    return settings.common_passport_qr_url or settings.frontend_url
