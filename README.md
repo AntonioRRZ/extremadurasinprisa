@@ -90,7 +90,7 @@ Variables principales:
 - `DATABASE_URL=sqlite:///C:/dev/extremadurasinprisa/extremadura_sin_prisas.db`
 - `SECRET_KEY=change-me-in-production-with-32-bytes`
 - `FRONTEND_URL=http://localhost:5173`
-- `COMMON_PASSPORT_QR_URL=http://localhost:5173/activar`
+- `COMMON_PASSPORT_QR_URL=http://localhost:5173`
 - `VITE_API_URL=http://localhost:8000/api/v1`
 
 Nota:
@@ -323,6 +323,114 @@ npm run build
 Nota:
 
 - en entornos restringidos, Vite puede necesitar permiso para escribir su fichero temporal de configuracion durante `npm run build`.
+
+## Despliegue en Internet
+
+### Objetivo recomendado
+
+- `frontend/` en Vercel
+- `backend/` en Render
+- base de datos Postgres en Neon
+- DNS gestionado desde DonDominio
+
+### 1. Preparar Postgres en Neon
+
+1. Crea un proyecto Postgres en Neon.
+2. Copia la cadena de conexion.
+3. Ajusta `DATABASE_URL` para SQLAlchemy con `psycopg`.
+
+Ejemplo:
+
+```env
+DATABASE_URL=postgresql+psycopg://USER:PASSWORD@HOST/DBNAME?sslmode=require
+```
+
+Nota:
+
+- SQLite sigue siendo valida para desarrollo local.
+- para despliegue se recomienda Postgres; este commit ya anade el driver `psycopg`.
+
+### 2. Desplegar frontend en Vercel
+
+Conecta Vercel al repositorio `AntonioRRZ/extremadurasinprisa` y crea un proyecto con:
+
+- Branch: `main`
+- Root Directory: `frontend`
+- Framework Preset: `Vite`
+- Build Command: `npm run build`
+- Output Directory: `dist`
+
+Variable de entorno:
+
+```env
+VITE_API_URL=https://api.tudominio.es/api/v1
+```
+
+Archivo incluido en el repo:
+
+- `frontend/vercel.json`
+
+Su rewrite evita errores al recargar rutas profundas como `/admin/pedidos/2`, `/mi/pasaportes/1` o cualquier otra ruta servida por `BrowserRouter`.
+
+### 3. Desplegar backend en Render
+
+Conecta Render al mismo repositorio GitHub y crea un `Web Service` con:
+
+- Branch: `main`
+- Root Directory: `backend`
+- Runtime: `Python`
+- Region: `Frankfurt`
+- Plan: `Free`
+- Build Command: `pip install .`
+- Pre-Deploy Command: `alembic -c alembic.ini upgrade head`
+- Start Command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- Health Check Path: `/api/v1/health`
+
+Archivo incluido en el repo:
+
+- `render.yaml`
+
+Variables de entorno recomendadas en Render:
+
+```env
+DATABASE_URL=postgresql+psycopg://USER:PASSWORD@HOST/DBNAME?sslmode=require
+SECRET_KEY=una-clave-larga-y-segura-de-al-menos-32-caracteres
+FRONTEND_URL=https://www.tudominio.es
+COMMON_PASSPORT_QR_URL=https://www.tudominio.es
+CORS_ORIGINS=["https://www.tudominio.es","https://tudominio.es"]
+```
+
+Notas:
+
+- `COMMON_PASSPORT_QR_URL` se mantiene como variable operativa, pero el QR comun mostrado al usuario debe apuntar a la home publica del sitio.
+- si prefieres separar frontend sin `www`, ajusta `FRONTEND_URL`, `COMMON_PASSPORT_QR_URL` y `CORS_ORIGINS` al dominio real elegido.
+
+### 4. DNS en DonDominio
+
+Configura los registros usando los valores exactos que te muestren Vercel y Render al anadir los dominios personalizados.
+
+Patron recomendado:
+
+- `www.extremadurasinprisas.es` -> frontend en Vercel
+- `api.extremadurasinprisas.es` -> backend en Render
+
+Registros tipicos:
+
+- `www` -> `CNAME` -> destino indicado por Vercel
+- `api` -> `CNAME` -> subdominio `onrender.com` indicado por Render
+- `@` -> `A` o configuracion apex indicada por Vercel
+- `TXT` -> solo si Vercel pide verificacion del dominio
+
+### 5. Orden operativo recomendado
+
+1. Crear la base de datos en Neon.
+2. Crear el servicio backend en Render y configurar variables.
+3. Verificar `https://api.tudominio.es/api/v1/health`.
+4. Crear el proyecto frontend en Vercel.
+5. Configurar `VITE_API_URL` con el dominio real del backend.
+6. Anadir dominios en Vercel y Render.
+7. Configurar DNS en DonDominio.
+8. Validar login, compra mock, alta con codigo y panel admin.
 
 ## Verificacion manual recomendada
 
